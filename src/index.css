@@ -1,0 +1,10 @@
+@font-face {
+  font-family: 'Zodiak';
+  src: url('/src/assets/fonts/Zodiak-Variable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
