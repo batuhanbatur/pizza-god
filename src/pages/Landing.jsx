@@ -46,6 +46,7 @@ export default function Landing() {
         scrollProgress={scrollProgress}
         windowHeight={windowHeight}
         handleOrderYourself={handleOrderYourself}
+        navVisible={navVisible}
       />
 
       <SideNav />

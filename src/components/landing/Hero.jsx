@@ -3,15 +3,17 @@ import logoOrder from '../../assets/order-yourself.png'
 import logoAi from '../../assets/order-ai.png'
 import GraffitiButton from '../ui/GraffitiButton'
 
-export default function Hero({ hoveredButton, setHoveredButton, scrollProgress, windowHeight, handleOrderYourself }) {
+export default function Hero({ hoveredButton, setHoveredButton, scrollProgress, windowHeight, handleOrderYourself, navVisible }) {
   const currentLogo = hoveredButton === 'order'
     ? logoOrder
     : hoveredButton === 'ai'
     ? logoAi
     : logo
 
-  const logoTopPx = (windowHeight / 2 - 320) * (1 - scrollProgress) + 24 * scrollProgress
-  const logoScale = 1 - scrollProgress * 0.35
+  const logoTopPx = navVisible ? 60 : (windowHeight / 2 - 320) * (1 - scrollProgress) + 60 * scrollProgress
+  const logoScale = navVisible ? 0.5 : 1 - scrollProgress * 0.35
+  const logoLeft = navVisible ? 'calc(25vw - 150px)' : '50%'
+  const logoTranslateX = navVisible ? '0%' : '-50%'
 
   const slideProgress = Math.min(scrollProgress / 0.4, 1)
   const leftTranslate = -slideProgress * 200
@@ -25,18 +27,18 @@ export default function Hero({ hoveredButton, setHoveredButton, scrollProgress, 
     <>
       {/* Fixed logo */}
       <img
-        key={hoveredButton}
         src={currentLogo}
         alt="Pizza God"
         style={{
           position: 'fixed',
           top: `${logoTopPx}px`,
-          left: '50%',
-          transform: `translateX(-50%) scale(${logoScale})`,
-          transformOrigin: 'top center',
+          left: logoLeft,
+          transform: `translateX(${logoTranslateX}) scale(${logoScale})`,
+          transformOrigin: 'top left',
           width: '320px',
           zIndex: 50,
           pointerEvents: 'none',
+          transition: 'left 0.4s ease',
         }}
       />
 

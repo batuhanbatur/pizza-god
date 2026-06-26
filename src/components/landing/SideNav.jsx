@@ -21,7 +21,7 @@ export default function SideNav() {
           setActiveId(null)
         }
       },
-      { threshold: 0.5 }
+      { threshold: 0, rootMargin: '-45% 0px -45% 0px' }
     )
 
     links.forEach(({ id }) => {

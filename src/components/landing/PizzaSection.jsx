@@ -10,7 +10,8 @@ export default function PizzaSection({ visible }) {
       style={{
         minHeight: '100vh',
         paddingTop: '280px',
-        paddingLeft: 'calc(25vw + 130px)',
+        marginLeft: 'calc(25vw + 130px)',
+        maxWidth: '860px',
         paddingRight: '4rem',
         paddingBottom: '4rem',
         opacity: visible ? 1 : 0,

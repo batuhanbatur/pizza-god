@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { DOUGH_OPTIONS, CHEESE_OPTIONS, POPPERS_OPTION } from '../../data/menu'
+import { useOrder } from '../../context/OrderContext'
 
 const FONT_MAP = {
   'heavy-metal-queen': 'font-metal-mania',
@@ -28,6 +29,7 @@ function OptionButton({ label, selected, onClick }) {
 }
 
 export default function PizzaCard({ pizza, onAddToCart }) {
+  const { dispatch } = useOrder()
   const [dough, setDough] = useState('regular')
   const [cheese, setCheese] = useState('mozzarella')
   const [poppers, setPoppers] = useState(false)
@@ -35,9 +37,12 @@ export default function PizzaCard({ pizza, onAddToCart }) {
 
   const nameFont = FONT_MAP[pizza.id] || 'font-zodiak'
   const total = pizza.price + (poppers ? POPPERS_OPTION.price * poppersQuantity : 0)
+  const visibleAllergens = pizza.allergens.filter(a => !(a === 'Gluten' && dough === 'gluten-free'))
 
   const handleAddToCart = () => {
-    onAddToCart({ id: pizza.id, name: pizza.name, price: pizza.price, quantity: 1, dough, cheese, poppers, poppersQuantity })
+    const item = { id: pizza.id, name: pizza.name, price: pizza.price, quantity: 1, dough, cheese, poppers, poppersQuantity }
+    dispatch({ type: 'ADD_TO_CART', payload: item })
+    onAddToCart(item)
   }
 
   return (
@@ -72,7 +77,7 @@ export default function PizzaCard({ pizza, onAddToCart }) {
           {pizza.description}
         </div>
         <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
-          {pizza.allergens.map(a => (
+          {visibleAllergens.map(a => (
             <span key={a} style={{
               backgroundColor: '#933C3C',
               color: '#E6D6E3',
