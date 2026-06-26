@@ -5,6 +5,27 @@
   font-style: normal;
 }
 
+@font-face {
+  font-family: 'MetalMania';
+  src: url('/src/assets/fonts/MetalMania-Regular.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Kablammo';
+  src: url('/src/assets/fonts/Kablammo-Regular-VariableFont_MORF.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+html, body {
+  background-color: #000;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+

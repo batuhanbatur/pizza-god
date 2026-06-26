@@ -7,7 +7,11 @@ const initialState = {
   allergens: [],
   dietary: "none",
   selectedPizzas: [],
+  cartItems: [],
+  deliveryMethod: 'delivery',
+  customerInfo: { name: '', address: '' },
 }
+
 function orderReducer(state, action) {
   switch (action.type) {
     case "SET_PEOPLE":
@@ -20,8 +24,62 @@ function orderReducer(state, action) {
       return { ...state, allergens: action.payload }
     case "SET_PIZZAS":
       return { ...state, selectedPizzas: action.payload }
-      case "SET_DIETARY":
-  return { ...state, dietary: action.payload }
+    case "SET_DIETARY":
+      return { ...state, dietary: action.payload }
+
+    case "ADD_TO_CART": {
+      const existing = state.cartItems.find(
+        (item) =>
+          item.id === action.payload.id &&
+          item.dough === action.payload.dough &&
+          item.cheese === action.payload.cheese
+      )
+      if (existing) {
+        return {
+          ...state,
+          cartItems: state.cartItems.map((item) =>
+            item === existing
+              ? { ...item, quantity: item.quantity + 1 }
+              : item
+          ),
+        }
+      }
+      return {
+        ...state,
+        cartItems: [...state.cartItems, { ...action.payload, quantity: 1 }],
+      }
+    }
+
+    case "REMOVE_FROM_CART":
+      return {
+        ...state,
+        cartItems: state.cartItems.filter((_, i) => i !== action.payload),
+      }
+
+    case "UPDATE_QUANTITY": {
+      const { index, quantity } = action.payload
+      if (quantity < 1) {
+        return {
+          ...state,
+          cartItems: state.cartItems.filter((_, i) => i !== index),
+        }
+      }
+      return {
+        ...state,
+        cartItems: state.cartItems.map((item, i) =>
+          i === index ? { ...item, quantity } : item
+        ),
+      }
+    }
+
+    case "CLEAR_CART":
+      return { ...state, cartItems: [] }
+
+    case 'SET_DELIVERY_METHOD': return { ...state, deliveryMethod: action.payload }
+    case 'SET_CUSTOMER_INFO': return { ...state, customerInfo: { ...state.customerInfo, ...action.payload } }
+    case 'SET_CART_ITEMS':
+  return { ...state, cartItems: action.payload }
+
     default:
       return state
   }

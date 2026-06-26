@@ -1,49 +1,58 @@
 import { useState, useEffect } from 'react'
-import logo from '../assets/pizza-god-logo.png'
-import logoOrder from '../assets/logo-order.png'
-import GraffitiButton from '../components/ui/GraffitiButton'
+import logoOrder from '../assets/order-yourself.png'
+import logoAi from '../assets/order-ai.png'
+import Hero from '../components/landing/Hero'
+import SideNav from '../components/landing/SideNav'
+import PizzaSection from '../components/landing/PizzaSection'
+import AboutSection from '../components/landing/AboutSection'
+import PizzaOfTheDaySection from '../components/landing/PizzaOfTheDaySection'
 
 export default function Landing() {
   const [hoveredButton, setHoveredButton] = useState(null)
+  const [scrollProgress, setScrollProgress] = useState(0)
+  const [windowHeight, setWindowHeight] = useState(window.innerHeight)
+  const [navVisible, setNavVisible] = useState(false)
 
   useEffect(() => {
-    const img = new Image()
-    img.src = logoOrder
+    [logoOrder, logoAi].forEach(src => {
+      const img = new Image()
+      img.src = src
+    })
   }, [])
 
-  return (
-    <div className="bg-black min-h-screen flex flex-col items-center justify-center" style={{ paddingBottom: '8vh' }}>
+  useEffect(() => {
+    setWindowHeight(window.innerHeight)
 
-      <img
-        key={hoveredButton}
-        src={hoveredButton === 'order' ? logoOrder : logo}
-        alt="Pizza God"
-        className="w-80"
+    const handleScroll = () => {
+      const progress = Math.min(window.scrollY / (window.innerHeight * 1.2), 1)
+      setScrollProgress(progress)
+      setNavVisible(window.scrollY >= window.innerHeight - 1)
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  const handleOrderYourself = () => {
+    window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })
+  }
+
+  return (
+    <div style={{ minHeight: '200vh', backgroundColor: '#F2E0B6' }}>
+
+      <Hero
+        hoveredButton={hoveredButton}
+        setHoveredButton={setHoveredButton}
+        scrollProgress={scrollProgress}
+        windowHeight={windowHeight}
+        handleOrderYourself={handleOrderYourself}
       />
 
-      <div className="flex items-start gap-0 mt-6">
+      <SideNav />
+      <PizzaSection visible={navVisible} />
+      <PizzaOfTheDaySection visible={navVisible} />
+      <AboutSection visible={navVisible} />
 
-        <div
-          className="flex flex-col items-center gap-3 px-12"
-          onMouseEnter={() => setHoveredButton('order')}
-          onMouseLeave={() => setHoveredButton(null)}
-        >
-          <GraffitiButton onClick={() => console.log('classic')}>Order Yourself</GraffitiButton>
-          <p className="font-zodiak text-white/50 text-sm text-center">
-            Classic pizza ordering experience
-          </p>
-        </div>
-
-        <div className="w-px bg-white/20 self-stretch mt-1" />
-
-        <div className="flex flex-col items-center gap-3 px-12">
-          <GraffitiButton onClick={() => console.log('ai')}>AI Powered</GraffitiButton>
-          <p className="font-zodiak text-white/50 text-sm text-center">
-            Let us help you decide what to eat
-          </p>
-        </div>
-
-      </div>
     </div>
   )
 }

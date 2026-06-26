@@ -5,6 +5,8 @@ export default {
       fontFamily: {
         zodiak: ["Zodiak", "serif"],
         marker: ['"Permanent Marker"', "cursive"],
+        "metal-mania": ["MetalMania", "sans-serif"],
+        kablammo: ["Kablammo", "cursive"],
       },
     },
   },
