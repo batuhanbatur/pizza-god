@@ -89,8 +89,13 @@ const OrderContext = createContext(null)
 
 export function OrderProvider({ children }) {
   const [order, dispatch] = useReducer(orderReducer, initialState)
+
+  const addItem = (item) => dispatch({ type: 'ADD_TO_CART', payload: item })
+  const removeItem = (index) => dispatch({ type: 'REMOVE_FROM_CART', payload: index })
+  const updateQuantity = (index, quantity) => dispatch({ type: 'UPDATE_QUANTITY', payload: { index, quantity } })
+
   return (
-    <OrderContext.Provider value={{ order, dispatch }}>
+    <OrderContext.Provider value={{ order, dispatch, addItem, removeItem, updateQuantity }}>
       {children}
     </OrderContext.Provider>
   )

@@ -10,9 +10,9 @@ export default function Hero({ hoveredButton, setHoveredButton, scrollProgress, 
     ? logoAi
     : logo
 
-  const logoTopPx = navVisible ? 60 : (windowHeight / 2 - 320) * (1 - scrollProgress) + 60 * scrollProgress
+  const logoTopPx = navVisible ? 10 : (windowHeight / 2 - 320) * (1 - scrollProgress) + 60 * scrollProgress
   const logoScale = navVisible ? 0.5 : 1 - scrollProgress * 0.35
-  const logoLeft = navVisible ? 'calc(25vw - 150px)' : '50%'
+  const logoLeft = navVisible ? '30px' : '50%'
   const logoTranslateX = navVisible ? '0%' : '-50%'
 
   const slideProgress = Math.min(scrollProgress / 0.4, 1)
@@ -62,7 +62,7 @@ export default function Hero({ hoveredButton, setHoveredButton, scrollProgress, 
           >
             <GraffitiButton onClick={handleOrderYourself}>Order Yourself</GraffitiButton>
             <p className="font-zodiak text-white/50 text-sm text-center">
-              You know what you want.
+              You choose.
             </p>
           </div>
 
@@ -84,7 +84,7 @@ export default function Hero({ hoveredButton, setHoveredButton, scrollProgress, 
           >
             <GraffitiButton onClick={() => console.log('ai')}>AI Powered</GraffitiButton>
             <p className="font-zodiak text-white/50 text-sm text-center">
-              You have no idea what you want.
+              We suggest.
             </p>
           </div>
 

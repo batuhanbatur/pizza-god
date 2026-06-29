@@ -37,7 +37,11 @@ export default function PizzaCard({ pizza, onAddToCart }) {
 
   const nameFont = FONT_MAP[pizza.id] || 'font-zodiak'
   const total = pizza.price + (poppers ? POPPERS_OPTION.price * poppersQuantity : 0)
-  const visibleAllergens = pizza.allergens.filter(a => !(a === 'Gluten' && dough === 'gluten-free'))
+  const visibleAllergens = pizza.allergens.filter(a => {
+  if (a === 'Gluten' && dough === 'gluten-free') return false
+  if (a === 'Milk' && cheese === 'vegan') return false
+  return true
+})
 
   const handleAddToCart = () => {
     const item = { id: pizza.id, name: pizza.name, price: pizza.price, quantity: 1, dough, cheese, poppers, poppersQuantity }

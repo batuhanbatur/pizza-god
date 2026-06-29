@@ -5,7 +5,7 @@ export const MENU = {
       {
         id: "margherita",
         name: "Margherita",
-        tagline: "expecting one-liner",
+        tagline: "What else could you expect for the first item?",
         description: "Tomato sauce, mozzarella, basil",
         price: 12.99,
         allergens: ["Gluten", "Milk"],
@@ -22,7 +22,7 @@ export const MENU = {
       },
       {
         id: "four-cheese",
-        name: "Four Cheese",
+        name: "4Chee",
         description: "Mozzarella, cheddar, parmesan, gorgonzola",
         tagline: "expecting one-liner",
         price: 15.99,
@@ -63,4 +63,8 @@ export const CHEESE_OPTIONS = [
   { id: "vegan", label: "Vegan Cheese" },
 ]
 
-export const POPPERS_OPTION = { id: 'poppers', label: 'Jalapeño Poppers', price: 3.99 }
+export const POPPERS_OPTION = {
+  id: "poppers",
+  label: "Jalapeño Poppers",
+  price: 3.99,
+}

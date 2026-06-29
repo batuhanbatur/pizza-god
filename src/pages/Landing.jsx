@@ -3,6 +3,7 @@ import logoOrder from '../assets/order-yourself.png'
 import logoAi from '../assets/order-ai.png'
 import Hero from '../components/landing/Hero'
 import SideNav from '../components/landing/SideNav'
+import CartSidebar from '../components/landing/CartSidebar'
 import PizzaSection from '../components/landing/PizzaSection'
 import AboutSection from '../components/landing/AboutSection'
 import PizzaOfTheDaySection from '../components/landing/PizzaOfTheDaySection'
@@ -50,7 +51,9 @@ export default function Landing() {
       />
 
       <SideNav />
+      <CartSidebar navVisible={navVisible} />
       <PizzaSection visible={navVisible} />
+
       <PizzaOfTheDaySection visible={navVisible} />
       <AboutSection visible={navVisible} />
 

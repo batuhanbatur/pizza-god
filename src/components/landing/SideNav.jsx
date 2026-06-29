@@ -1,32 +1,31 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 const links = [
-  { label: 'Pizzas', id: 'pizzas' },
-  { label: 'Pizza of the Day', id: 'pizza-of-the-day' },
-  { label: 'About Us', id: 'about-us' },
+  { label: 'PIZZAS', id: 'pizzas' },
+  { label: 'PIZZA OF THE DAY', id: 'pizza-of-the-day' },
+  { label: 'ABOUT US', id: 'about-us' },
 ]
 
 export default function SideNav() {
   const [activeId, setActiveId] = useState(null)
-  const [hoveredId, setHoveredId] = useState(null)
   const [isVisible, setIsVisible] = useState(false)
+  const intersectionState = useRef({})
 
   useEffect(() => {
-    const activeObserver = new IntersectionObserver(
+    const observer = new IntersectionObserver(
       (entries) => {
-        const intersecting = entries.find((e) => e.isIntersecting)
-        if (intersecting) {
-          setActiveId(intersecting.target.id)
-        } else if (entries.every((e) => !e.isIntersecting)) {
-          setActiveId(null)
-        }
+        entries.forEach(e => {
+          intersectionState.current[e.target.id] = e.isIntersecting
+        })
+        const active = links.find(({ id }) => intersectionState.current[id])
+        setActiveId(active?.id ?? null)
       },
       { threshold: 0, rootMargin: '-45% 0px -45% 0px' }
     )
 
     links.forEach(({ id }) => {
       const el = document.getElementById(id)
-      if (el) activeObserver.observe(el)
+      if (el) observer.observe(el)
     })
 
     const handleScroll = () => {
@@ -36,7 +35,7 @@ export default function SideNav() {
     window.addEventListener('scroll', handleScroll, { passive: true })
 
     return () => {
-      activeObserver.disconnect()
+      observer.disconnect()
       window.removeEventListener('scroll', handleScroll)
     }
   }, [])
@@ -44,46 +43,61 @@ export default function SideNav() {
   return (
     <nav style={{
       position: 'fixed',
-      top: '280px',
-      paddingLeft: 'calc(25vw - 150px)',
-      width: '180px',
+      top: 0,
+      left: 0,
+      width: '220px',
+      height: '100vh',
+      backgroundColor: '#111',
+      zIndex: 40,
+      display: 'flex',
+      flexDirection: 'column',
       opacity: isVisible ? 1 : 0,
       pointerEvents: isVisible ? 'auto' : 'none',
       transition: 'opacity 0.4s',
     }}>
-      <ul style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+
+      {/* Space for logo */}
+      <div style={{ height: '250px', flexShrink: 0 }} />
+
+      {/* Nav links */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', paddingLeft: '1.5rem' }}>
         {links.map(({ label, id }) => {
           const isActive = activeId === id
-          const isHovered = hoveredId === id
           return (
-            <li key={id} style={{
-              borderLeft: isActive ? '3px solid #39FF14' : '3px solid transparent',
-              paddingLeft: '10px',
-            }}>
-              <button
-                className="font-zodiak"
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  padding: '0.4rem 0',
-                  color: isHovered ? '#39FF14' : '#933C3C',
-                  transition: 'color 0.2s',
-                  textAlign: 'left',
-                  display: 'block',
-                  width: '100%',
-                  whiteSpace: 'nowrap',
-                }}
-                onMouseEnter={() => setHoveredId(id)}
-                onMouseLeave={() => setHoveredId(null)}
-                onClick={() => document.getElementById(id).scrollIntoView({ behavior: 'smooth' })}
-              >
+            <button
+              key={id}
+              className="font-zodiak"
+              onClick={() => document.getElementById(id).scrollIntoView({ behavior: 'smooth' })}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.6rem',
+                padding: '0.5rem 0',
+                textAlign: 'left',
+              }}
+            >
+              <span style={{
+                width: '6px',
+                height: '6px',
+                borderRadius: '50%',
+                backgroundColor: isActive ? '#39FF14' : '#444',
+                flexShrink: 0,
+              }} />
+              <span style={{
+                fontSize: '0.75rem',
+                letterSpacing: '0.15em',
+                color: isActive ? '#39FF14' : '#E6D6E3',
+              }}>
                 {label}
-              </button>
-            </li>
+              </span>
+            </button>
           )
         })}
-      </ul>
+      </div>
+
     </nav>
   )
 }
