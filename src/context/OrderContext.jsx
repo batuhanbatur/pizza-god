@@ -32,7 +32,8 @@ function orderReducer(state, action) {
         (item) =>
           item.id === action.payload.id &&
           item.dough === action.payload.dough &&
-          item.cheese === action.payload.cheese
+          item.cheese === action.payload.cheese &&
+          JSON.stringify(item.extras ?? {}) === JSON.stringify(action.payload.extras ?? {})
       )
       if (existing) {
         return {
@@ -72,6 +73,23 @@ function orderReducer(state, action) {
       }
     }
 
+    case "UPDATE_ITEM_EXTRA_QUANTITY": {
+      const { index, extraId, quantity } = action.payload
+      return {
+        ...state,
+        cartItems: state.cartItems.map((item, i) => {
+          if (i !== index) return item
+          const extras = { ...item.extras }
+          if (quantity <= 0) {
+            delete extras[extraId]
+          } else {
+            extras[extraId] = Math.min(5, quantity)
+          }
+          return { ...item, extras }
+        }),
+      }
+    }
+
     case "CLEAR_CART":
       return { ...state, cartItems: [] }
 
@@ -93,9 +111,10 @@ export function OrderProvider({ children }) {
   const addItem = (item) => dispatch({ type: 'ADD_TO_CART', payload: item })
   const removeItem = (index) => dispatch({ type: 'REMOVE_FROM_CART', payload: index })
   const updateQuantity = (index, quantity) => dispatch({ type: 'UPDATE_QUANTITY', payload: { index, quantity } })
+  const updateItemExtraQuantity = (index, extraId, quantity) => dispatch({ type: 'UPDATE_ITEM_EXTRA_QUANTITY', payload: { index, extraId, quantity } })
 
   return (
-    <OrderContext.Provider value={{ order, dispatch, addItem, removeItem, updateQuantity }}>
+    <OrderContext.Provider value={{ order, dispatch, addItem, removeItem, updateQuantity, updateItemExtraQuantity }}>
       {children}
     </OrderContext.Provider>
   )

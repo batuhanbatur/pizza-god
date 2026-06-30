@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { MENU, DOUGH_OPTIONS, CHEESE_OPTIONS, POPPERS_OPTION } from '../../data/menu'
+import { MENU, DOUGH_OPTIONS, CHEESE_OPTIONS, EXTRAS } from '../../data/menu'
 import { useOrder } from '../../context/OrderContext'
 import AllergenBadge from '../ui/AllergenBadge'
 
@@ -9,8 +9,9 @@ function OptionButton({ label, selected, onClick }) {
       onClick={onClick}
       style={{
         background: 'none',
-        border: `1px solid ${selected ? '#39FF14' : '#555'}`,
-        color: selected ? '#39FF14' : '#888',
+        border: `1px solid ${selected ? '#1a1a1a' : '#ccc'}`,
+        color: selected ? '#1a1a1a' : '#888',
+        fontWeight: selected ? 'bold' : 'normal',
         padding: '0.3rem 0.8rem',
         borderRadius: '3px',
         cursor: 'pointer',
@@ -34,21 +35,30 @@ function PizzaRow({ pizza }) {
   const nameFont = FONT_MAP[pizza.id] || 'font-zodiak'
   const [dough, setDough] = useState('regular')
   const [cheese, setCheese] = useState('mozzarella')
-  const [poppers, setPoppers] = useState(false)
-  const [poppersQuantity, setPoppersQuantity] = useState(1)
+  const [selectedExtras, setSelectedExtras] = useState({})
 
-  const visibleAllergens = pizza.allergens.filter(a => {
-    if (a === 'Gluten' && dough === 'gluten-free') return false
-    if (a === 'Milk' && cheese === 'vegan') return false
-    return true
-  })
+  const extraAllergens = Object.keys(selectedExtras)
+    .flatMap(id => EXTRAS.find(e => e.id === id)?.allergens || [])
 
-  const total = pizza.price + (poppers ? POPPERS_OPTION.price * poppersQuantity : 0)
+  const visibleAllergens = [...new Set([
+    ...pizza.allergens.filter(a => {
+      if (a === 'Gluten' && dough === 'gluten-free') return false
+      if (a === 'Milk' && cheese === 'vegan') return false
+      return true
+    }),
+    ...extraAllergens,
+  ])]
+
+  const extrasTotal = Object.entries(selectedExtras).reduce((sum, [id, qty]) => {
+    const extra = EXTRAS.find(e => e.id === id)
+    return sum + (extra ? extra.price * qty : 0)
+  }, 0)
+  const total = pizza.price + extrasTotal
 
   const handleAddToCart = () => {
     dispatch({
       type: 'ADD_TO_CART',
-      payload: { id: pizza.id, name: pizza.name, price: pizza.price, quantity: 1, dough, cheese, poppers, poppersQuantity },
+      payload: { id: pizza.id, name: pizza.name, price: pizza.price, quantity: 1, dough, cheese, extras: selectedExtras, allergens: visibleAllergens },
     })
   }
 
@@ -56,8 +66,8 @@ function PizzaRow({ pizza }) {
     <div style={{ paddingTop: '2.5rem', paddingBottom: '2.5rem' }}>
 
       {/* Name + price */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.3rem' }}>
-        <span className={nameFont} style={{ fontSize: '1.4rem', fontWeight: 'bold', letterSpacing: '0.1em', color: '#1a1a1a', textTransform: 'uppercase' }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: '1.5rem', marginBottom: '0.3rem' }}>
+        <span className={nameFont} style={{ fontSize: '1.8rem', fontWeight: '900', letterSpacing: '0.1em', color: '#1a1a1a', textTransform: 'uppercase' }}>
           {pizza.name}
         </span>
         <span className="font-zodiak" style={{ fontSize: '1.4rem', color: '#1a1a1a' }}>
@@ -71,7 +81,7 @@ function PizzaRow({ pizza }) {
       </div>
 
       {/* Ingredients */}
-      <div className="font-zodiak" style={{ color: '#555', fontSize: '0.85rem', marginBottom: '1rem' }}>
+      <div className="font-zodiak" style={{ color: '#777', fontSize: '0.8rem', marginBottom: '1rem' }}>
         {pizza.description.split(', ').join(' • ')}
       </div>
 
@@ -88,37 +98,49 @@ function PizzaRow({ pizza }) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginBottom: '1.25rem' }}>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span className="font-zodiak" style={{ color: '#888', fontSize: '0.8rem', width: '80px' }}>Dough</span>
+          <span className="font-zodiak" style={{ color: '#aaa', fontSize: '0.75rem', width: '80px' }}>Dough</span>
           {DOUGH_OPTIONS.map(opt => (
             <OptionButton key={opt.id} label={opt.label} selected={dough === opt.id} onClick={() => setDough(opt.id)} />
           ))}
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span className="font-zodiak" style={{ color: '#888', fontSize: '0.8rem', width: '80px' }}>Cheese</span>
+          <span className="font-zodiak" style={{ color: '#aaa', fontSize: '0.75rem', width: '80px' }}>Cheese</span>
           {CHEESE_OPTIONS.map(opt => (
             <OptionButton key={opt.id} label={opt.label} selected={cheese === opt.id} onClick={() => setCheese(opt.id)} />
           ))}
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-          <span className="font-zodiak" style={{ color: '#888', fontSize: '0.8rem', width: '80px' }}>Extras</span>
-          {!poppers ? (
-            <button
-              onClick={() => setPoppers(true)}
-              style={{ background: 'none', border: '1px solid #555', color: '#888', padding: '0.3rem 0.8rem', borderRadius: '3px', cursor: 'pointer', fontSize: '0.8rem', fontFamily: 'inherit' }}
-            >
-              Add Jalapeño Poppers +${POPPERS_OPTION.price.toFixed(2)}
-            </button>
-          ) : (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <button onClick={() => setPoppersQuantity(q => Math.max(1, q - 1))} style={{ background: 'none', border: '1px solid #555', color: '#1a1a1a', width: '28px', height: '28px', borderRadius: '3px', cursor: 'pointer', fontSize: '1rem' }}>−</button>
-              <span className="font-zodiak" style={{ color: '#1a1a1a', minWidth: '1rem', textAlign: 'center' }}>{poppersQuantity}</span>
-              <button onClick={() => setPoppersQuantity(q => Math.min(5, q + 1))} style={{ background: 'none', border: '1px solid #555', color: '#1a1a1a', width: '28px', height: '28px', borderRadius: '3px', cursor: 'pointer', fontSize: '1rem' }}>+</button>
-              <span className="font-zodiak" style={{ color: '#888', fontSize: '0.8rem' }}>Jalapeño Poppers</span>
-              <button onClick={() => { setPoppers(false); setPoppersQuantity(1) }} style={{ background: 'none', border: 'none', color: '#933C3C', cursor: 'pointer', fontSize: '0.75rem', fontFamily: 'inherit', padding: '0 0.25rem' }}>Remove</button>
-            </div>
-          )}
+        {/* Extras */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+          <span className="font-zodiak" style={{ color: '#aaa', fontSize: '0.75rem' }}>Extras</span>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', alignItems: 'flex-start' }}>
+          {EXTRAS.map(extra => {
+            const qty = selectedExtras[extra.id]
+            const isSelected = qty !== undefined
+            return (
+              <div key={extra.id}>
+                {!isSelected ? (
+                  <button
+                    onClick={() => setSelectedExtras(prev => ({ ...prev, [extra.id]: 1 }))}
+                    style={{ background: 'none', border: '1px solid #555', color: '#888', padding: '0.3rem 0.8rem', borderRadius: '3px', cursor: 'pointer', fontSize: '0.8rem', fontFamily: 'inherit' }}
+                  >
+                    {extra.label} +${extra.price.toFixed(2)}
+                  </button>
+                ) : (
+                  <button
+                    className="font-zodiak"
+                    onClick={() => setSelectedExtras(prev => { const n = { ...prev }; delete n[extra.id]; return n })}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', background: 'none', border: '1px solid #1a1a1a', color: '#1a1a1a', fontWeight: 'bold', fontSize: '0.8rem', fontFamily: 'inherit', padding: '0.3rem 0.6rem 0.3rem 0.8rem', borderRadius: '3px', cursor: 'pointer' }}
+                  >
+                    {extra.label}
+                    <span style={{ color: '#933C3C', fontSize: '1rem', lineHeight: 1 }}>×</span>
+                  </button>
+                )}
+              </div>
+            )
+          })}
+          </div>
         </div>
       </div>
 

@@ -4,6 +4,8 @@ import EggIcon from '../../assets/allergens/allergen-egg.svg?react'
 import SoyIcon from '../../assets/allergens/allergen-soy.svg?react'
 import NutsIcon from '../../assets/allergens/allergen-nuts.svg?react'
 import SesameIcon from '../../assets/allergens/allergen-sesame.svg?react'
+import MustardIcon from '../../assets/allergens/allergen-mustard.svg?react'
+import SulphitesIcon from '../../assets/allergens/allergen-sulphites.svg?react'
 
 const ALLERGEN_ICONS = {
   Gluten: GlutenIcon,
@@ -12,6 +14,8 @@ const ALLERGEN_ICONS = {
   Soy: SoyIcon,
   Nuts: NutsIcon,
   Sesame: SesameIcon,
+  Mustard: MustardIcon,
+  Sulphites: SulphitesIcon,
 }
 
 export default function AllergenBadge({ allergen }) {

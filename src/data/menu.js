@@ -63,8 +63,10 @@ export const CHEESE_OPTIONS = [
   { id: "vegan", label: "Vegan Cheese" },
 ]
 
-export const POPPERS_OPTION = {
-  id: "poppers",
-  label: "Jalapeño Poppers",
-  price: 3.99,
-}
+export const EXTRAS = [
+  { id: 'poppers', label: 'Jalapeño Poppers', price: 3.99, allergens: ['Gluten', 'Milk', 'Egg'] },
+  { id: 'extra-mozzarella', label: 'Extra Mozzarella', price: 1.99, allergens: ['Milk'] },
+  { id: 'pesto-drizzle', label: 'Pesto Drizzle', price: 1.49, allergens: ['Nuts', 'Milk'] },
+  { id: 'garlic-sauce', label: 'Garlic Sauce', price: 0.99, allergens: ['Egg'] },
+  { id: 'bbq-sauce', label: 'BBQ Sauce', price: 0.99, allergens: ['Sulphites'] },
+]

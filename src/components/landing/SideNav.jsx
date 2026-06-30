@@ -60,40 +60,40 @@ export default function SideNav() {
       <div style={{ height: '250px', flexShrink: 0 }} />
 
       {/* Nav links */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', paddingLeft: '1.5rem' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
         {links.map(({ label, id }) => {
           const isActive = activeId === id
           return (
-            <button
+            <div
               key={id}
-              className="font-zodiak"
-              onClick={() => document.getElementById(id).scrollIntoView({ behavior: 'smooth' })}
               style={{
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.6rem',
-                padding: '0.5rem 0',
-                textAlign: 'left',
+                borderLeft: isActive ? '3px solid #39FF14' : '3px solid transparent',
+                paddingLeft: '12px',
+                transition: 'border-color 0.2s',
               }}
             >
-              <span style={{
-                width: '6px',
-                height: '6px',
-                borderRadius: '50%',
-                backgroundColor: isActive ? '#39FF14' : '#444',
-                flexShrink: 0,
-              }} />
-              <span style={{
-                fontSize: '0.75rem',
-                letterSpacing: '0.15em',
-                color: isActive ? '#39FF14' : '#E6D6E3',
-              }}>
-                {label}
-              </span>
-            </button>
+              <button
+                className="font-zodiak"
+                onClick={() => document.getElementById(id).scrollIntoView({ behavior: 'smooth' })}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '0.5rem 0',
+                  textAlign: 'left',
+                  transform: isActive ? 'translateY(-2px)' : 'translateY(0)',
+                  transition: 'transform 0.2s, color 0.2s',
+                }}
+              >
+                <span style={{
+                  fontSize: '0.75rem',
+                  letterSpacing: '0.15em',
+                  color: isActive ? '#39FF14' : '#E6D6E3',
+                }}>
+                  {label}
+                </span>
+              </button>
+            </div>
           )
         })}
       </div>
