@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import AccessibilityButton from '../ui/AccessibilityButton'
 
 const links = [
   { label: 'PIZZAS', id: 'pizzas' },
@@ -60,7 +61,7 @@ export default function SideNav() {
       <div style={{ height: '250px', flexShrink: 0 }} />
 
       {/* Nav links */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', flex: 1 }}>
         {links.map(({ label, id }) => {
           const isActive = activeId === id
           return (
@@ -96,6 +97,11 @@ export default function SideNav() {
             </div>
           )
         })}
+      </div>
+
+      {/* Accessibility button */}
+      <div style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'center' }}>
+        <AccessibilityButton />
       </div>
 
     </nav>

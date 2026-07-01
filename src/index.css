@@ -29,3 +29,15 @@ html, body {
 @tailwind components;
 @tailwind utilities;
 
+.neon-sticks path,
+.neon-sticks ellipse,
+.neon-sticks circle,
+.neon-sticks rect,
+.neon-sticks polygon {
+  fill: #356D45 !important;
+}
+
+.neon-sticks {
+  filter: drop-shadow(0 0 6px #356D45);
+}
+
