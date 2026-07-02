@@ -34,7 +34,7 @@ export default function PizzaOfTheDaySection({ visible }) {
         <img
           src="/pizza-of-the-day-clock.svg"
           alt=""
-          style={{ height: '3.5rem', width: 'auto', pointerEvents: 'none' }}
+          style={{ height: '7rem', width: 'auto', pointerEvents: 'none' }}
         />
         <h2 className="font-zodiak" style={{
           fontSize: '3.5rem',
@@ -77,7 +77,7 @@ export default function PizzaOfTheDaySection({ visible }) {
       <PizzaRow
         pizza={pizza}
         discountedPrice={+(pizza.price * 0.35).toFixed(2)}
-        isPotd={true}
+        isPotd={false}
         soldOut={remaining === 0}
         onOrder={() => {
           const newRemaining = remaining - 1

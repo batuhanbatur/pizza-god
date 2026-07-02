@@ -1,8 +1,12 @@
+import { useContext } from 'react'
 import { MENU } from '../../data/menu'
 import PizzaRow from './PizzaRow'
 import { getDailyPizza } from '../../utils/dailyPizza'
+import NeonBurst from '../graffiti/NeonBurst'
+import { AccessibilityContext } from '../../context/AccessibilityContext'
 
 export default function PizzaSection({ visible }) {
+  const { reduceGraffiti } = useContext(AccessibilityContext)
   const dailyPizza = getDailyPizza()
   return (
     <div
@@ -20,12 +24,33 @@ export default function PizzaSection({ visible }) {
         transition: 'opacity 0.4s',
       }}
     >
-      <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-        <img
-          src="/pizzas-wordmark-neon-a.svg"
-          alt="PIZZAS"
-          style={{ height: '80px', pointerEvents: 'none' }}
-        />
+      <div style={{ position: 'relative', textAlign: 'center', marginBottom: '3rem' }}>
+        {!reduceGraffiti && (
+          <NeonBurst style={{
+            position: 'absolute',
+            bottom: '-70px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: '900px',
+            pointerEvents: 'none',
+            zIndex: 0,
+          }} />
+        )}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '0',
+          position: 'relative',
+          zIndex: 1,
+        }}>
+          <span className="font-zodiak" style={{ fontSize: '3.5rem', fontWeight: 'bold', letterSpacing: '0.2em', color: '#1a1a1a' }}>PIZZ</span>
+          {reduceGraffiti
+            ? <span className="font-zodiak" style={{ fontSize: '3.5rem', fontWeight: 'bold', letterSpacing: '0.2em', color: '#1a1a1a' }}>A</span>
+            : <img src="/pizzas-wordmark-neon-a.svg" alt="A" style={{ height: '60px', width: 'auto', pointerEvents: 'none' }} />
+          }
+          <span className="font-zodiak" style={{ fontSize: '3.5rem', fontWeight: 'bold', letterSpacing: '0.2em', color: '#1a1a1a' }}>S</span>
+        </div>
       </div>
 
       {MENU.classics.items.map((pizza, i) => (

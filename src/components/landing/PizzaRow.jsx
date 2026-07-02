@@ -95,8 +95,8 @@ export default function PizzaRow({ pizza, discountedPrice, isPotd = false, soldO
           </span>
         )}
         {isPotd && (
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#39FF14', fontSize: '0.85rem', fontWeight: 'bold' }} className="font-zodiak">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="#39FF14" xmlns="http://www.w3.org/2000/svg">
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#1a1a1a', fontSize: '0.85rem', fontWeight: 'bold' }} className="font-zodiak">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="#1a1a1a" xmlns="http://www.w3.org/2000/svg">
               <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
             </svg>
             Pizza of the Day
