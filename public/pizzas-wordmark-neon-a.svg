@@ -1,0 +1,44 @@
+<svg viewBox="0 0 130 125" xmlns="http://www.w3.org/2000/svg" fill="none" role="img" aria-label="A">
+  <defs>
+    <filter id="neonHaloA" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="7" />
+    </filter>
+    <filter id="neonSoftA" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="1.1" />
+    </filter>
+  </defs>
+
+  <g id="neon-a" stroke-linecap="round">
+
+    <!-- layer 1: halos -->
+    <g stroke="#39FF14" stroke-width="13" opacity="0.5" filter="url(#neonHaloA)">
+      <line x1="61" y1="12" x2="12" y2="108" />
+      <line x1="69" y1="12" x2="118" y2="108" />
+      <line x1="34" y1="76" x2="96" y2="76" />
+    </g>
+
+    <!-- layer 2: tube bodies -->
+    <g stroke="#5fe84a" stroke-width="7" filter="url(#neonSoftA)">
+      <line x1="61" y1="12" x2="12" y2="108" />
+      <line x1="69" y1="12" x2="118" y2="108" />
+      <line x1="34" y1="76" x2="96" y2="76" />
+    </g>
+
+    <!-- layer 3: hot cores -->
+    <g stroke="#eaffe6" stroke-width="2.4">
+      <line x1="61" y1="12" x2="12" y2="108" />
+      <line x1="69" y1="12" x2="118" y2="108" />
+      <line x1="34" y1="76" x2="96" y2="76" />
+    </g>
+
+    <!-- electrode end caps — delete this group if too busy at final size -->
+    <g id="a-caps" stroke="#2a2a2a" stroke-width="8">
+      <line x1="61" y1="12" x2="63" y2="8" />
+      <line x1="69" y1="12" x2="67" y2="8" />
+      <line x1="12" y1="108" x2="10" y2="112" />
+      <line x1="118" y1="108" x2="120" y2="112" />
+      <line x1="34" y1="76" x2="30" y2="76" />
+      <line x1="96" y1="76" x2="100" y2="76" />
+    </g>
+  </g>
+</svg>

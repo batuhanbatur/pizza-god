@@ -287,13 +287,13 @@ export default function CartSidebar({ navVisible }) {
             {/* Checkout header */}
             <div style={{ marginBottom: '0.75rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-                <span className="font-zodiak" style={{ fontSize: '0.7rem', letterSpacing: '0.15em', color: '#555', textTransform: 'uppercase' }}>
+                <span className="font-zodiak" style={{ fontFamily: 'inherit', fontSize: '0.7rem', letterSpacing: '0.15em', color: '#555', textTransform: 'uppercase' }}>
                   Checkout
                 </span>
                 <button
                   onClick={() => setCheckoutMode(false)}
                   className="font-zodiak"
-                  style={{ background: 'none', border: 'none', color: '#555', fontSize: '0.75rem', cursor: 'pointer', padding: 0, fontFamily: 'inherit' }}
+                  style={{ background: 'none', border: 'none', color: '#933C3C', fontSize: '0.8rem', cursor: 'pointer', padding: 0, fontFamily: 'inherit' }}
                 >
                   ← Back to Cart
                 </button>
@@ -319,7 +319,7 @@ export default function CartSidebar({ navVisible }) {
                 { key: 'zip', label: 'ZIP', placeholder: '7007' },
               ].map(({ key, label, placeholder }) => (
                 <div key={key} style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                  <span className="font-zodiak" style={{ fontSize: '0.7rem', color: '#888', letterSpacing: '0.05em' }}>{label}</span>
+                  <span className="font-zodiak" style={{ fontFamily: 'inherit', fontSize: '0.75rem', color: '#555', letterSpacing: '0.05em', textTransform: 'uppercase' }}>{label}</span>
                   <input
                     className="font-zodiak"
                     value={address[key]}
@@ -332,7 +332,7 @@ export default function CartSidebar({ navVisible }) {
 
               {/* Payment method */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                <span className="font-zodiak" style={{ fontSize: '0.7rem', color: '#888', letterSpacing: '0.05em' }}>Payment</span>
+                <span className="font-zodiak" style={{ fontFamily: 'inherit', fontSize: '0.75rem', color: '#555', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Payment</span>
                 <div style={{ display: 'flex', gap: '0.4rem' }}>
                   {PAYMENT_OPTIONS.map(opt => {
                     const selected = paymentMethod === opt.id
@@ -364,17 +364,17 @@ export default function CartSidebar({ navVisible }) {
 
               {/* Payment explanation */}
               {paymentMethod === 'cash' && (
-                <p className="font-zodiak" style={{ fontSize: '0.75rem', color: '#777', marginTop: '0.5rem', margin: 0 }}>
+                <p className="font-zodiak" style={{ fontFamily: 'inherit', fontSize: '0.8rem', color: '#777', marginTop: '0.5rem', margin: 0 }}>
                   Pay with cash when your order arrives.
                 </p>
               )}
               {paymentMethod === 'credit' && (
-                <p className="font-zodiak" style={{ fontSize: '0.75rem', color: '#777', marginTop: '0.5rem', margin: 0 }}>
+                <p className="font-zodiak" style={{ fontFamily: 'inherit', fontSize: '0.8rem', color: '#777', marginTop: '0.5rem', margin: 0 }}>
                   Our courier will bring a card terminal.
                 </p>
               )}
               {paymentMethod === 'online' && (
-                <p className="font-zodiak" style={{ fontSize: '0.75rem', color: '#777', marginTop: '0.5rem', margin: 0 }}>
+                <p className="font-zodiak" style={{ fontFamily: 'inherit', fontSize: '0.8rem', color: '#777', marginTop: '0.5rem', margin: 0 }}>
                   Pay securely before we prepare your order.
                 </p>
               )}
@@ -382,7 +382,7 @@ export default function CartSidebar({ navVisible }) {
               {/* Card number — shown only for online payment */}
               {paymentMethod === 'online' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                  <span className="font-zodiak" style={{ fontSize: '0.7rem', color: '#888', letterSpacing: '0.05em' }}>Card Number</span>
+                  <span className="font-zodiak" style={{ fontFamily: 'inherit', fontSize: '0.75rem', color: '#555', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Card Number</span>
                   <input
                     className="font-zodiak"
                     placeholder="XXXX-XXXX-XXXX-XXXX"
@@ -403,17 +403,16 @@ export default function CartSidebar({ navVisible }) {
                     disabled={!formComplete}
                     className="font-zodiak"
                     style={{
-                      width: '100%',
                       backgroundColor: formComplete ? '#39FF14' : '#ccc',
                       color: '#000',
-                      fontWeight: 'bold',
-                      padding: '0.7rem',
-                      borderRadius: '3px',
                       border: 'none',
+                      padding: '0.8rem',
+                      width: '100%',
+                      borderRadius: '3px',
                       cursor: formComplete ? 'pointer' : 'not-allowed',
-                      fontSize: '0.9rem',
-                      letterSpacing: '0.05em',
-                      transition: 'background-color 0.2s',
+                      fontWeight: 'bold',
+                      fontSize: '1rem',
+                      fontFamily: 'inherit',
                     }}
                   >
                     Complete Order

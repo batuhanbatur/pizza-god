@@ -1,0 +1,102 @@
+<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Melting pizza clock">
+  <defs>
+    <!-- The full melted silhouette. Everything hangs off this one path:
+         cheese fill, crust band, ink outline. Bottom edge sags and two
+         drips are part of the silhouette itself so crust + outline
+         follow them automatically. -->
+    <path id="pizzaSilhouette" d="
+      M 200 38
+      C 268 38 320 90 324 150
+      C 326 188 314 212 302 236
+      C 295 251 292 267 296 291
+      C 299 310 291 323 282 323
+      C 273 323 269 308 272 291
+      C 275 271 268 257 256 249
+      C 240 239 226 245 216 255
+      C 208 263 206 281 208 299
+      C 210 319 202 335 193 335
+      C 184 335 180 318 183 299
+      C 186 279 180 261 168 253
+      C 154 244 139 249 130 239
+      C 115 224 102 208 94 188
+      C 80 156 84 96 132 62
+      C 152 47 172 38 200 38 Z" />
+  </defs>
+
+  <!-- 1. cheese body -->
+  <use href="#pizzaSilhouette" fill="#F3D689" />
+
+  <!-- 2. sauce ring: hand-wobbled inner ring peeking out from under the cheese -->
+  <path id="sauce-ring" d="
+    M 200 62
+    C 252 62 296 102 300 148
+    C 302 178 292 202 280 224
+    C 272 238 268 252 270 268
+    C 258 250 240 240 220 246
+    C 206 250 198 262 196 276
+    C 192 260 182 248 166 242
+    C 150 236 136 240 126 230
+    C 112 214 104 198 100 180
+    C 92 146 100 100 140 74
+    C 158 62 178 62 200 62 Z"
+    fill="none" stroke="#C0392B" stroke-width="9" opacity="0.8" stroke-linejoin="round" />
+
+  <!-- 3. crust band: the silhouette stroked wide, so it melts with the shape -->
+  <use href="#pizzaSilhouette" fill="none" stroke="#D9A05B" stroke-width="15" stroke-linejoin="round" />
+
+  <!-- 4. slice lines as clock geometry -->
+  <g id="slice-lines" stroke="#2a1a00" stroke-linecap="round" fill="none">
+    <!-- ordinary slice lines: thin, slightly curved like a knife dragged twice -->
+    <g stroke-width="1.8" opacity="0.75">
+      <path d="M 200 168 C 236 140 258 118 276 96" />   <!-- ~1:30 -->
+      <path d="M 200 168 C 240 176 272 184 296 190" />  <!-- ~3:30 -->
+      <path d="M 200 168 C 204 210 206 246 205 280" />  <!-- ~6, sags with the melt -->
+      <path d="M 200 168 C 168 200 148 224 136 238" />  <!-- ~7:30 -->
+      <path d="M 200 168 C 162 160 128 152 102 146" />  <!-- ~9 -->
+      <path d="M 200 168 C 172 134 152 110 138 92" />   <!-- ~10:30 -->
+    </g>
+    <!-- clock hands: two slice lines drawn heavier -->
+    <path id="minute-hand" d="M 200 168 C 200 128 200 84 200 52" stroke-width="4" />
+    <path id="hour-hand"   d="M 200 168 C 222 186 244 202 262 214" stroke-width="4.5" />
+    <circle id="pivot" cx="200" cy="168" r="5" fill="#2a1a00" stroke="none" />
+  </g>
+
+  <!-- 5. hour ticks notched into the crust -->
+  <g id="hour-ticks" stroke="#2a1a00" stroke-width="2.6" stroke-linecap="round" opacity="0.85">
+    <line x1="200" y1="34"  x2="200" y2="46"  />  <!-- XII -->
+    <line x1="318" y1="150" x2="306" y2="151" />  <!-- III -->
+    <line x1="90"  y1="184" x2="102" y2="181" />  <!-- IX -->
+  </g>
+
+  <!-- 6. pepperoni: flat fills, inked edges; the two lowest ones stretch
+       vertically because they're sliding down the melt -->
+  <g id="pepperoni" fill="#B3402E" stroke="#2a1a00" stroke-width="2">
+    <circle cx="240" cy="112" r="15" />
+    <circle cx="152" cy="120" r="13" />
+    <circle cx="272" cy="166" r="12" />
+    <circle cx="128" cy="182" r="14" />
+    <ellipse cx="230" cy="222" rx="11" ry="16" transform="rotate(8 230 222)" />
+    <ellipse cx="172" cy="226" rx="10" ry="17" transform="rotate(-6 172 226)" />
+  </g>
+
+  <!-- 7. cheese pull details: thin strands inside the two big drips -->
+  <g id="cheese-strands" stroke="#E4B95B" stroke-width="2.4" stroke-linecap="round" fill="none" opacity="0.9">
+    <path d="M 278 262 C 280 280 279 298 280 312" />
+    <path d="M 190 272 C 191 292 190 310 191 324" />
+    <path d="M 213 262 C 213 276 212 288 212 296" />
+  </g>
+
+  <!-- 8. top ink outline: the silhouette drawn once more, thin and dark,
+       so the whole object reads as a single inked illustration -->
+  <use href="#pizzaSilhouette" fill="none" stroke="#2a1a00" stroke-width="3" stroke-linejoin="round" />
+
+  <!-- 9. secondary melt drip off the crust, outside the silhouette,
+       lower-left — pure crust running -->
+  <path id="crust-run" d="
+    M 138 246
+    C 142 262 140 276 136 288
+    C 133 297 127 300 123 296
+    C 119 292 121 282 124 272
+    C 127 262 128 254 127 247"
+    fill="#D9A05B" stroke="#2a1a00" stroke-width="2.6" stroke-linejoin="round" />
+</svg>
