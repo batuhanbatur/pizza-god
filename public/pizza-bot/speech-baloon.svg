@@ -1,0 +1,33 @@
+<!--
+  PizzaBot speech balloons — irregular hand-drawn ink style.
+  Text goes in an HTML layer
+  on top, NOT inside the SVG (see usage notes at bottom).
+-->
+<svg viewBox="0 0 640 260" xmlns="http://www.w3.org/2000/svg" fill="none">
+  <defs>
+
+    <!-- ============ VARIANT 1: clean wobble, tail bottom-left ============ -->
+    <symbol id="balloon" viewBox="0 0 300 120">
+      <path fill="#F2E0B6" stroke="#1a1a1a" stroke-width="5" stroke-linejoin="round" d="
+        M 24 18
+        C 60 10 104 14 148 11
+        C 196 8 244 13 276 16
+        C 288 17 294 24 292 34
+        C 290 44 293 56 291 66
+        C 289 78 284 86 272 88
+        C 232 94 188 89 144 92
+        C 116 94 88 91 66 92
+        C 58 92 50 94 44 98
+        C 36 103 28 110 22 112
+        C 26 105 30 99 31 93
+        C 22 91 13 87 10 78
+        C 6 66 9 52 8 40
+        C 7 28 12 21 24 18 Z" />
+    </symbol>
+
+   
+  </defs>
+
+  <!-- preview rows; delete freely -->
+  <use href="#balloon" x="10"  y="10" width="300" height="120" />
+</svg>

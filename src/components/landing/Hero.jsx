@@ -1,9 +1,12 @@
+import { useState } from 'react'
 import logo from '../../assets/pizza-god-logo.png'
 import logoOrder from '../../assets/order-yourself.png'
 import logoAi from '../../assets/order-ai.png'
 import GraffitiButton from '../ui/GraffitiButton'
+import PizzaBotModal from './PizzaBotModal'
 
 export default function Hero({ hoveredButton, setHoveredButton, scrollProgress, windowHeight, handleOrderYourself, navVisible }) {
+  const [modalOpen, setModalOpen] = useState(false)
   const currentLogo = hoveredButton === 'order'
     ? logoOrder
     : hoveredButton === 'ai'
@@ -82,7 +85,7 @@ export default function Hero({ hoveredButton, setHoveredButton, scrollProgress, 
               pointerEvents: buttonOpacity === 0 ? 'none' : 'auto',
             }}
           >
-            <GraffitiButton onClick={() => console.log('ai')}>AI Powered</GraffitiButton>
+            <GraffitiButton onClick={() => setModalOpen(true)}>AI Powered</GraffitiButton>
             <p className="font-zodiak text-white/50 text-sm text-center">
               We suggest.
             </p>
@@ -90,6 +93,14 @@ export default function Hero({ hoveredButton, setHoveredButton, scrollProgress, 
 
         </div>
       </div>
+      <PizzaBotModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onComplete={() => {
+          setModalOpen(false)
+          document.getElementById('pizzas')?.scrollIntoView({ behavior: 'smooth' })
+        }}
+      />
     </>
   )
 }

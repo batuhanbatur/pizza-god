@@ -38,6 +38,10 @@ export default function Landing() {
     window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })
   }
 
+  const handleBotComplete = () => {
+    document.getElementById('pizzas').scrollIntoView({ behavior: 'smooth' })
+  }
+
   return (
     <div style={{ minHeight: '200vh', backgroundColor: '#F2E0B6' }}>
 
@@ -47,6 +51,7 @@ export default function Landing() {
         scrollProgress={scrollProgress}
         windowHeight={windowHeight}
         handleOrderYourself={handleOrderYourself}
+        handleBotComplete={handleBotComplete}
         navVisible={navVisible}
       />
 
