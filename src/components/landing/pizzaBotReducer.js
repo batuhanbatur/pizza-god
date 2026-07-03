@@ -6,12 +6,24 @@ export const initialState = {
   messages: [],
   recommendation: null,
   status: 'idle',
+  allergens: [],
+  stepper: null,
+  resultSelections: {},
+  pendingBot: false,
+  escalatedForBot: null,
 }
 
 export function pizzaBotReducer(state, action) {
   switch (action.type) {
     case 'ADD_MESSAGE':
-      return { ...state, messages: [...state.messages, action.payload] }
+      return {
+        ...state,
+        messages: [...state.messages, action.payload],
+        // Bot messages end the pending window; user messages don't
+        pendingBot: action.payload.role === 'bot' ? false : state.pendingBot,
+      }
+    case 'SET_PENDING':
+      return { ...state, pendingBot: action.payload }
     case 'SET_PARTY_SIZE':
       return { ...state, partySize: action.payload }
     case 'SET_CONSTRAINTS':
@@ -24,6 +36,23 @@ export function pizzaBotReducer(state, action) {
       return { ...state, status: action.payload }
     case 'SET_RECOMMENDATION':
       return { ...state, recommendation: action.payload, step: 'result' }
+    case 'SET_ALLERGENS':
+      return { ...state, allergens: action.payload }
+    case 'TOGGLE_ALLERGEN': {
+      const a = action.payload
+      const has = state.allergens.includes(a)
+      return { ...state, allergens: has ? state.allergens.filter(x => x !== a) : [...state.allergens, a] }
+    }
+    case 'SET_STEPPER':
+      return { ...state, stepper: action.payload }
+    case 'SET_RESULT_SELECTIONS':
+      return { ...state, resultSelections: action.payload }
+    case 'TOGGLE_RESULT_SELECTION': {
+      const i = action.payload
+      return { ...state, resultSelections: { ...state.resultSelections, [i]: !state.resultSelections[i] } }
+    }
+    case 'SET_ESCALATED':
+      return { ...state, escalatedForBot: action.payload }
     case 'RESET':
       return { ...initialState }
     default:
