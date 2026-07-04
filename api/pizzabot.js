@@ -1,9 +1,15 @@
+import { DOUGH_OPTIONS, CHEESE_OPTIONS, OPTION_REMOVES } from '../src/data/menu.js'
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
   const { partySize, constraints, vibe, menuSummary } = req.body
+
+  const doughOptions = DOUGH_OPTIONS.map(o => o.id)
+  const cheeseOptions = CHEESE_OPTIONS.map(o => o.id)
+  const enrichedMenu = menuSummary.map(item => ({ ...item, doughOptions, cheeseOptions }))
 
   const prompt = `You are PizzaBot, the AI assistant for Pizza God — a restaurant where classical antiquity meets street culture. You speak with dry wit and authority.
 
@@ -13,17 +19,21 @@ Customer preferences:
 - Vibe: ${vibe}
 
 Menu:
-${JSON.stringify(menuSummary, null, 2)}
+${JSON.stringify(enrichedMenu, null, 2)}
 
-Recommend 1-3 pizzas. For each, give one short sentence of reasoning in PizzaBot's voice — dry, confident, slightly theatrical. Adjust quantity for party size and hunger.
+Modifications available on any pizza, and the allergens each one removes:
+${JSON.stringify(OPTION_REMOVES, null, 2)}
+
+Recommend 1-3 pizzas. For each, give one short sentence of reasoning in PizzaBot's voice — dry, confident, slightly theatrical. Adjust quantity for party size and hunger. If a pizza would otherwise conflict with an allergen to avoid, but a modification above resolves the conflict, recommend it WITH that modification instead of skipping it, and mention the modification in the reason.
 
 Respond with JSON only:
 {
   "picks": [
-    { "pizzaId": "pizza-id", "quantity": 1, "reason": "one sentence in PizzaBot voice" }
+    { "pizzaId": "pizza-id", "quantity": 1, "reason": "one sentence in PizzaBot voice", "modifications": { "dough": "gluten-free", "cheese": "vegan" } }
   ],
   "voiceLine": "one very short closing line, max 8 words, dry and confident. Examples: 'Your fate is sealed.' / 'The gods have spoken.' / 'Go. Eat. Be worthy.'"
-}`
+}
+"modifications" is optional — omit it entirely, or omit either key, when no change from regular dough / mozzarella is needed.`
 
   try {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {

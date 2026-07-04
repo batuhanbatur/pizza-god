@@ -1,10 +1,9 @@
-import { useReducer, useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { pizzaBotReducer, initialState } from './pizzaBotReducer'
 import { BOT_LINES } from '../../data/pizzaBotScript'
-import { MENU } from '../../data/menu'
 import { useOrder } from '../../context/OrderContext'
 import { BALLOONS } from '../pizza-bot/balloons'
+import { usePizzaBotFlow } from '../pizza-bot/usePizzaBotFlow'
 import PizzaBotBubble from './PizzaBotBubble'
 import UserBubble from './UserBubble'
 
@@ -12,15 +11,6 @@ const FONT_MAP = {
   'heavy-metal-queen': 'font-metal-mania',
   'mushroom-samba': 'font-kablammo',
 }
-
-const AVATAR = {
-  base: '/pizza-bot/god-head-base.svg',
-  thinking: '/pizza-bot/god-thinking.svg',
-  allergy1: '/pizza-bot/god-allergy-1.svg',
-  allergy2: '/pizza-bot/god-allergy-2.svg',
-}
-
-const USE_MOCK = import.meta.env.DEV
 
 // Three staggered dots inside a small balloon
 function TypingIndicator({ avatar }) {
@@ -65,152 +55,20 @@ function TypingIndicator({ avatar }) {
 }
 
 export default function PizzaBotModal({ isOpen, onClose, onComplete }) {
-  const [state, dispatch] = useReducer(pizzaBotReducer, initialState)
+  const { state, dispatch, handlers, AVATAR } = usePizzaBotFlow(isOpen)
   const { dispatch: orderDispatch } = useOrder()
   const bottomRef = useRef(null)
-
-  const addBotMessage = (text, avatar = AVATAR.base) =>
-    dispatch({ type: 'ADD_MESSAGE', payload: { role: 'bot', text, avatar } })
-  const addUserMessage = (text) =>
-    dispatch({ type: 'ADD_MESSAGE', payload: { role: 'user', text } })
-
-  // Index of the latest bot message, used to drive the allergy-avatar escalation
-  let newestBotIdx = -1
-  state.messages.forEach((msg, i) => {
-    if (msg.role === 'bot') newestBotIdx = i
-  })
-
-  useEffect(() => {
-    if (!isOpen) return
-    dispatch({ type: 'RESET' })
-    const t = setTimeout(() => {
-      addBotMessage(BOT_LINES.party_size.opening, AVATAR.base)
-    }, 400)
-    return () => clearTimeout(t)
-  }, [isOpen])
-
-  useEffect(() => {
-    if (state.messages[newestBotIdx]?.avatar !== AVATAR.allergy1) return
-    const t = setTimeout(() => dispatch({ type: 'SET_ESCALATED', payload: newestBotIdx }), 700)
-    return () => clearTimeout(t)
-  }, [newestBotIdx])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [state.messages.length, state.pendingBot])
-
-  const handlePartySizeChip = (chip) => {
-    addUserMessage(chip.chatLabel)
-    dispatch({ type: 'SET_PARTY_SIZE', payload: chip.value })
-    dispatch({ type: 'SET_STEP', payload: 'constraints' })
-    dispatch({ type: 'SET_STEPPER', payload: null })
-    dispatch({ type: 'SET_PENDING', payload: true })
-    const ack = chip.value <= 4
-      ? BOT_LINES.party_size.acknowledge[chip.value]
-      : BOT_LINES.party_size.acknowledgeMany
-    setTimeout(() => {
-      addBotMessage(ack, AVATAR.base)
-      dispatch({ type: 'SET_PENDING', payload: true })
-      setTimeout(() => {
-        addBotMessage(BOT_LINES.constraints.opening, AVATAR.allergy1)
-      }, 900)
-    }, 900)
-  }
 
   const submitStepper = () => {
     const n = state.stepper
     const chatLabel = n === 4
       ? BOT_LINES.party_size.chips[3].chatLabel
       : BOT_LINES.party_size.chatLabelMany(n)
-    handlePartySizeChip({ value: n, chatLabel })
-  }
-
-  const handleConstraintsDone = () => {
-    const label = state.allergens.length === 0
-      ? BOT_LINES.constraints.noAllergy
-      : state.allergens.join(', ')
-    addUserMessage(label)
-    dispatch({ type: 'SET_CONSTRAINTS', payload: state.allergens })
-    dispatch({ type: 'SET_STEP', payload: 'vibe' })
-    dispatch({ type: 'SET_PENDING', payload: true })
-    const ackText = state.allergens.length > 0 ? BOT_LINES.constraints.acknowledge : BOT_LINES.constraints.acknowledgeNone
-    const ackAvatar = state.allergens.length > 0 ? AVATAR.allergy2 : AVATAR.base
-    setTimeout(() => {
-      addBotMessage(ackText, ackAvatar)
-      dispatch({ type: 'SET_PENDING', payload: true })
-      setTimeout(() => {
-        addBotMessage(BOT_LINES.vibe.opening, AVATAR.base)
-      }, 900)
-    }, 900)
-  }
-
-  const handleVibeChip = (chip) => {
-    addUserMessage(chip.chatLabel)
-    dispatch({ type: 'SET_VIBE', payload: chip.value })
-    dispatch({ type: 'SET_STEP', payload: 'recommending' })
-    dispatch({ type: 'SET_PENDING', payload: true })
-    setTimeout(() => {
-      addBotMessage(BOT_LINES.vibe.acknowledge[chip.value])
-      dispatch({ type: 'SET_PENDING', payload: true })
-      setTimeout(() => callPizzaBot(chip.value), 1800)
-    }, 900)
-  }
-
-  const callPizzaBot = async (vibe) => {
-    dispatch({ type: 'SET_PENDING', payload: true })
-    dispatch({ type: 'SET_STATUS', payload: 'thinking' })
-
-    try {
-      let parsed
-
-      if (USE_MOCK) {
-        await new Promise(r => setTimeout(r, 1200))
-        parsed = {
-          picks: [
-            { pizzaId: 'margherita', quantity: 1, reason: 'The foundation. Mortals always return to the Margherita.' },
-            { pizzaId: 'pepperoni', quantity: 1, reason: 'A reliable prophecy. The pepperoni never lies.' },
-          ],
-          voiceLine: 'Your fate is sealed.',
-        }
-      } else {
-        const response = await fetch('/api/pizzabot', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            partySize: state.partySize,
-            constraints: state.constraints,
-            vibe,
-            menuSummary: MENU.classics.items.map(p => ({
-              id: p.id,
-              name: p.name,
-              price: p.price,
-              description: p.description,
-              allergens: p.allergens,
-              tags: p.tags,
-            })),
-          }),
-        })
-        parsed = await response.json()
-      }
-
-      const enriched = parsed.picks.map(pick => {
-        const pizza = MENU.classics.items.find(p => p.id === pick.pizzaId)
-        if (!pizza) return null
-        const hasWarning = state.constraints.some(c => pizza.allergens.includes(c))
-        return { ...pick, pizza, hasWarning }
-      }).filter(Boolean)
-
-      const selections = {}
-      enriched.forEach((_, i) => { selections[i] = true })
-      dispatch({ type: 'SET_RESULT_SELECTIONS', payload: selections })
-      dispatch({ type: 'SET_RECOMMENDATION', payload: { picks: enriched, voiceLine: parsed.voiceLine } })
-      dispatch({ type: 'SET_STATUS', payload: 'idle' })
-      addBotMessage(parsed.voiceLine, AVATAR.base) // clears pendingBot via reducer
-
-    } catch {
-      dispatch({ type: 'SET_STATUS', payload: 'error' })
-      addBotMessage(BOT_LINES.error) // clears pendingBot via reducer
-    }
+    handlers.handlePartySizeChip({ value: n, chatLabel })
   }
 
   const handleAddToCart = () => {
@@ -224,10 +82,10 @@ export default function PizzaBotModal({ isOpen, onClose, onComplete }) {
           name: rec.pizza.name,
           price: rec.pizza.price,
           quantity: rec.quantity,
-          dough: 'regular',
-          cheese: 'mozzarella',
+          dough: rec.modifications.dough || 'regular',
+          cheese: rec.modifications.cheese || 'mozzarella',
           extras: {},
-          allergens: rec.pizza.allergens,
+          allergens: rec.effectiveAllergens,
         },
       })
     })
@@ -237,8 +95,6 @@ export default function PizzaBotModal({ isOpen, onClose, onComplete }) {
 
   if (!isOpen) return null
 
-  const allergyEscalated = state.escalatedForBot === newestBotIdx
-
   const footerLabelStyle = {
     fontSize: '0.7rem',
     letterSpacing: '0.15em',
@@ -246,6 +102,14 @@ export default function PizzaBotModal({ isOpen, onClose, onComplete }) {
     textTransform: 'uppercase',
     textAlign: 'center',
     marginBottom: '0.75rem',
+  }
+
+  const inlineFooterLabelStyle = {
+    fontSize: '1.4rem',
+    letterSpacing: '0.15em',
+    color: '#555',
+    textTransform: 'uppercase',
+    whiteSpace: 'nowrap',
   }
 
   const chipBtn = {
@@ -293,23 +157,14 @@ export default function PizzaBotModal({ isOpen, onClose, onComplete }) {
           {state.messages.map((msg, i) => (
             <div key={i}>
               {msg.role === 'bot'
-                ? <PizzaBotBubble
-                    text={msg.text}
-                    avatar={
-                      i === newestBotIdx && msg.avatar === AVATAR.allergy1
-                        ? (allergyEscalated ? AVATAR.allergy2 : AVATAR.allergy1)
-                        : msg.avatar
-                    }
-                  />
+                ? <PizzaBotBubble text={msg.text} avatar={msg.avatar} />
                 : <UserBubble text={msg.text} />
               }
             </div>
           ))}
 
           {state.pendingBot && (
-            <TypingIndicator
-              avatar={state.status === 'thinking' ? AVATAR.thinking : AVATAR.base}
-            />
+            <TypingIndicator avatar={AVATAR.thinking} />
           )}
 
           {state.step === 'result' && state.recommendation && (
@@ -337,6 +192,14 @@ export default function PizzaBotModal({ isOpen, onClose, onComplete }) {
                         ×{rec.quantity} · ${(rec.pizza.price * rec.quantity).toFixed(2)}
                       </span>
                     </div>
+                    {(rec.modifications.dough || rec.modifications.cheese) && (
+                      <div className="font-zodiak" style={{ fontSize: '0.8rem', color: '#777', fontStyle: 'italic', marginTop: '0.2rem' }}>
+                        · {[
+                          rec.modifications.dough && `${rec.modifications.dough} dough`,
+                          rec.modifications.cheese && `${rec.modifications.cheese} cheese`,
+                        ].filter(Boolean).join(' · ')}
+                      </div>
+                    )}
                     <div className="font-zodiak" style={{ fontSize: '0.8rem', color: '#777', fontStyle: 'italic', marginTop: '0.2rem' }}>
                       {rec.reason}
                     </div>
@@ -384,13 +247,13 @@ export default function PizzaBotModal({ isOpen, onClose, onComplete }) {
         }}>
 
           {state.step === 'party_size' && (
-            <>
-              <div className="font-zodiak" style={footerLabelStyle}>{BOT_LINES.party_size.footerLabel}</div>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem' }}>
+              <span className="font-zodiak" style={inlineFooterLabelStyle}>{BOT_LINES.party_size.footerLabel}</span>
               <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.6rem' }}>
               {BOT_LINES.party_size.chips.slice(0, 3).map(chip => (
                 <button
                   key={chip.value}
-                  onClick={() => handlePartySizeChip(chip)}
+                  onClick={() => handlers.handlePartySizeChip(chip)}
                   className="font-zodiak"
                   style={{ ...chipBtn, padding: '0.55rem 0', minWidth: 56, fontWeight: 'bold', fontSize: '1.1rem' }}
                 >
@@ -427,14 +290,14 @@ export default function PizzaBotModal({ isOpen, onClose, onComplete }) {
                 </>
               )}
               </div>
-            </>
+            </div>
           )}
 
           {state.step === 'constraints' && (
-            <>
-              <div className="font-zodiak" style={footerLabelStyle}>{BOT_LINES.constraints.footerLabel}</div>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.6rem' }}>
-              <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.4rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.6rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem' }}>
+                <span className="font-zodiak" style={inlineFooterLabelStyle}>{BOT_LINES.constraints.footerLabel}</span>
+                <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.4rem' }}>
                 {BOT_LINES.constraints.chips.map(allergen => {
                   const selected = state.allergens.includes(allergen)
                   return (
@@ -456,9 +319,10 @@ export default function PizzaBotModal({ isOpen, onClose, onComplete }) {
                     </button>
                   )
                 })}
+                </div>
               </div>
               <button
-                onClick={handleConstraintsDone}
+                onClick={handlers.handleConstraintsDone}
                 className="font-zodiak"
                 style={{
                   backgroundColor: '#1a1a1a',
@@ -472,8 +336,7 @@ export default function PizzaBotModal({ isOpen, onClose, onComplete }) {
               >
                 {state.allergens.length > 0 ? 'Next →' : 'No Allergies'}
               </button>
-              </div>
-            </>
+            </div>
           )}
 
           {state.step === 'vibe' && (
@@ -483,7 +346,7 @@ export default function PizzaBotModal({ isOpen, onClose, onComplete }) {
               {BOT_LINES.vibe.chips.map(chip => (
                 <button
                   key={chip.value}
-                  onClick={() => handleVibeChip(chip)}
+                  onClick={() => handlers.handleVibeChip(chip)}
                   className="font-zodiak"
                   style={{
                     background: 'none',

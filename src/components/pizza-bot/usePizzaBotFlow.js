@@ -1,0 +1,106 @@
+import { useReducer, useEffect } from 'react'
+import { pizzaBotReducer, initialState } from '../landing/pizzaBotReducer'
+import { BOT_LINES } from '../../data/pizzaBotScript'
+import { getRecommendation } from './api'
+
+export const AVATAR = {
+  base: '/pizza-bot/god-head-base.svg',
+  thinking: '/pizza-bot/god-thinking.svg',
+}
+
+export function usePizzaBotFlow(isOpen) {
+  const [state, dispatch] = useReducer(pizzaBotReducer, initialState)
+
+  const addBotMessage = (text, avatar = AVATAR.base) =>
+    dispatch({ type: 'ADD_MESSAGE', payload: { role: 'bot', text, avatar } })
+  const addUserMessage = (text) =>
+    dispatch({ type: 'ADD_MESSAGE', payload: { role: 'user', text } })
+
+  useEffect(() => {
+    if (!isOpen) return
+    dispatch({ type: 'RESET' })
+    const t = setTimeout(() => {
+      addBotMessage(BOT_LINES.party_size.opening, AVATAR.base)
+    }, 400)
+    return () => clearTimeout(t)
+  }, [isOpen])
+
+  const handlePartySizeChip = (chip) => {
+    addUserMessage(chip.chatLabel)
+    dispatch({ type: 'SET_PARTY_SIZE', payload: chip.value })
+    dispatch({ type: 'SET_STEP', payload: 'constraints' })
+    dispatch({ type: 'SET_STEPPER', payload: null })
+    dispatch({ type: 'SET_PENDING', payload: true })
+    const ack = chip.value <= 4
+      ? BOT_LINES.party_size.acknowledge[chip.value]
+      : BOT_LINES.party_size.acknowledgeMany
+    setTimeout(() => {
+      addBotMessage(ack, AVATAR.base)
+      dispatch({ type: 'SET_PENDING', payload: true })
+      setTimeout(() => {
+        addBotMessage(BOT_LINES.constraints.opening, AVATAR.base)
+      }, 900)
+    }, 900)
+  }
+
+  const handleConstraintsDone = () => {
+    const label = state.allergens.length === 0
+      ? BOT_LINES.constraints.noAllergy
+      : state.allergens.join(', ')
+    addUserMessage(label)
+    dispatch({ type: 'SET_CONSTRAINTS', payload: state.allergens })
+    dispatch({ type: 'SET_STEP', payload: 'vibe' })
+    dispatch({ type: 'SET_PENDING', payload: true })
+    const ackText = state.allergens.length > 0 ? BOT_LINES.constraints.acknowledge : BOT_LINES.constraints.acknowledgeNone
+    setTimeout(() => {
+      addBotMessage(ackText, AVATAR.base)
+      dispatch({ type: 'SET_PENDING', payload: true })
+      setTimeout(() => {
+        addBotMessage(BOT_LINES.vibe.opening, AVATAR.base)
+      }, 900)
+    }, 900)
+  }
+
+  const handleVibeChip = (chip) => {
+    addUserMessage(chip.chatLabel)
+    dispatch({ type: 'SET_VIBE', payload: chip.value })
+    dispatch({ type: 'SET_STEP', payload: 'recommending' })
+    dispatch({ type: 'SET_PENDING', payload: true })
+    setTimeout(() => {
+      addBotMessage(BOT_LINES.vibe.acknowledge[chip.value])
+      dispatch({ type: 'SET_PENDING', payload: true })
+      setTimeout(() => callPizzaBot(chip.value), 1800)
+    }, 900)
+  }
+
+  const callPizzaBot = async (vibe) => {
+    dispatch({ type: 'SET_PENDING', payload: true })
+    dispatch({ type: 'SET_STATUS', payload: 'thinking' })
+
+    try {
+      const { picks, voiceLine } = await getRecommendation({
+        partySize: state.partySize,
+        constraints: state.constraints,
+        vibe,
+      })
+
+      const selections = {}
+      picks.forEach((_, i) => { selections[i] = true })
+      dispatch({ type: 'SET_RESULT_SELECTIONS', payload: selections })
+      dispatch({ type: 'SET_RECOMMENDATION', payload: { picks, voiceLine } })
+      dispatch({ type: 'SET_STATUS', payload: 'idle' })
+      addBotMessage(voiceLine, AVATAR.base) // clears pendingBot via reducer
+
+    } catch {
+      dispatch({ type: 'SET_STATUS', payload: 'error' })
+      addBotMessage(BOT_LINES.error) // clears pendingBot via reducer
+    }
+  }
+
+  return {
+    state,
+    dispatch,
+    handlers: { handlePartySizeChip, handleConstraintsDone, handleVibeChip },
+    AVATAR,
+  }
+}

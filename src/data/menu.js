@@ -63,6 +63,13 @@ export const CHEESE_OPTIONS = [
   { id: "vegan", label: "Vegan Cheese" },
 ]
 
+// Maps a modification option id to the allergens choosing it removes from a pizza.
+// Shared by the client (enrichment) and api/pizzabot.js (prompt) so both agree on intent.
+export const OPTION_REMOVES = {
+  'gluten-free': ['Gluten'],
+  'vegan': ['Milk'],
+}
+
 export const EXTRAS = [
   { id: 'poppers', label: 'Jalapeño Poppers', price: 3.99, allergens: ['Gluten', 'Milk', 'Egg'] },
   { id: 'extra-mozzarella', label: 'Extra Mozzarella', price: 1.99, allergens: ['Milk'] },
