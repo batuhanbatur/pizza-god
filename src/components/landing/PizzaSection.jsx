@@ -3,6 +3,7 @@ import { MENU } from '../../data/menu'
 import PizzaRow from './PizzaRow'
 import { getDailyPizza } from '../../utils/dailyPizza'
 import NeonBurst from '../graffiti/NeonBurst'
+import NeonA from '../graffiti/NeonA'
 import { AccessibilityContext } from '../../context/AccessibilityContext'
 
 export default function PizzaSection({ visible }) {
@@ -47,7 +48,7 @@ export default function PizzaSection({ visible }) {
           <span className="font-zodiak" style={{ fontSize: '3.5rem', fontWeight: 'bold', letterSpacing: '0.2em', color: '#1a1a1a' }}>PIZZ</span>
           {reduceGraffiti
             ? <span className="font-zodiak" style={{ fontSize: '3.5rem', fontWeight: 'bold', letterSpacing: '0.2em', color: '#1a1a1a' }}>A</span>
-            : <img src="/pizzas-wordmark-neon-a.svg" alt="A" style={{ height: '60px', width: 'auto', pointerEvents: 'none' }} />
+            : <NeonA style={{ height: '60px', width: 'auto', pointerEvents: 'none' }} />
           }
           <span className="font-zodiak" style={{ fontSize: '3.5rem', fontWeight: 'bold', letterSpacing: '0.2em', color: '#1a1a1a' }}>S</span>
         </div>

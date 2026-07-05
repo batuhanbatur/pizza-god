@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import logoOrder from '../assets/order-yourself.png'
-import logoAi from '../assets/order-ai.png'
+import logoOrder from '../assets/order-yourself.webp'
+import logoAi from '../assets/order-ai.webp'
 import Hero from '../components/landing/Hero'
 import SideNav from '../components/landing/SideNav'
 import CartSidebar from '../components/landing/CartSidebar'

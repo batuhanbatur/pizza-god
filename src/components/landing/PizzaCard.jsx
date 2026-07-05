@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { DOUGH_OPTIONS, CHEESE_OPTIONS, POPPERS_OPTION } from '../../data/menu'
 import { useOrder } from '../../context/OrderContext'
+import { ALLERGEN_ICONS } from '../icons/AllergenIcons'
 
 const FONT_MAP = {
   'heavy-metal-queen': 'font-metal-mania',
@@ -81,18 +82,25 @@ export default function PizzaCard({ pizza, onAddToCart }) {
           {pizza.description}
         </div>
         <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
-          {visibleAllergens.map(a => (
-            <span key={a} style={{
-              backgroundColor: '#933C3C',
-              color: '#E6D6E3',
-              fontSize: '0.7rem',
-              padding: '0.15rem 0.5rem',
-              borderRadius: '999px',
-              fontFamily: 'inherit',
-            }}>
-              {a}
-            </span>
-          ))}
+          {visibleAllergens.map(a => {
+            const Icon = ALLERGEN_ICONS[a]
+            return (
+              <span key={a} style={{
+                backgroundColor: '#933C3C',
+                color: '#E6D6E3',
+                fontSize: '0.7rem',
+                padding: '0.15rem 0.5rem',
+                borderRadius: '999px',
+                fontFamily: 'inherit',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.3rem',
+              }}>
+                {Icon && <Icon />}
+                {a}
+              </span>
+            )
+          })}
         </div>
       </div>
 

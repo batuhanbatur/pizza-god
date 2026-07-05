@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { getDailyPizza, getTodayKey } from '../../utils/dailyPizza'
+import { getDailyPizza, getTodayKey, POTD_DISCOUNT_MULTIPLIER } from '../../utils/dailyPizza'
 import PizzaRow from './PizzaRow'
 
 export default function PizzaOfTheDaySection({ visible }) {
@@ -37,14 +37,13 @@ export default function PizzaOfTheDaySection({ visible }) {
           style={{ height: '7rem', width: 'auto', pointerEvents: 'none' }}
         />
         <h2 className="font-zodiak" style={{
-          fontSize: '3.5rem',
-          fontWeight: 'bold',
-          letterSpacing: '0.2em',
+          fontSize: '2.75rem',
+          fontWeight: 600,
+          letterSpacing: '0',
           color: '#1a1a1a',
-          textTransform: 'uppercase',
           margin: 0,
         }}>
-          PIZZA OF THE DAY
+          Pizza of the Day
         </h2>
       </div>
 
@@ -76,7 +75,7 @@ export default function PizzaOfTheDaySection({ visible }) {
 
       <PizzaRow
         pizza={pizza}
-        discountedPrice={+(pizza.price * 0.35).toFixed(2)}
+        discountedPrice={+(pizza.price * POTD_DISCOUNT_MULTIPLIER).toFixed(2)}
         isPotd={false}
         soldOut={remaining === 0}
         onOrder={() => {

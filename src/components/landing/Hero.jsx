@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import logo from '../../assets/pizza-god-logo.png'
-import logoOrder from '../../assets/order-yourself.png'
-import logoAi from '../../assets/order-ai.png'
+import logo from '../../assets/pizza-god-logo.webp'
+import logoOrder from '../../assets/order-yourself.webp'
+import logoAi from '../../assets/order-ai.webp'
 import GraffitiButton from '../ui/GraffitiButton'
 import PizzaBotModal from './PizzaBotModal'
 

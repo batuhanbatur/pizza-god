@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-  <!-- Egg shape - wider bottom, narrower top -->
-  <path d="M12 3 C8 3 5 8 5 14 C5 18.5 8 21 12 21 C16 21 19 18.5 19 14 C19 8 16 3 12 3Z"/>
-  <!-- Shine -->
-  <path d="M9 9 C9 7.5 10 6.5 11 6" stroke-width="1" opacity="0.4"/>
-</svg>

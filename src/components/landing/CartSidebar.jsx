@@ -1,38 +1,20 @@
 import { useState } from 'react'
 import { useOrder } from '../../context/OrderContext'
 import { EXTRAS } from '../../data/menu'
-import GlutenIcon from '../../assets/allergens/allergen-gluten.svg?react'
-import MilkIcon from '../../assets/allergens/allergen-milk.svg?react'
-import EggIcon from '../../assets/allergens/allergen-egg.svg?react'
-import SoyIcon from '../../assets/allergens/allergen-soy.svg?react'
-import NutsIcon from '../../assets/allergens/allergen-nuts.svg?react'
-import SesameIcon from '../../assets/allergens/allergen-sesame.svg?react'
-import MustardIcon from '../../assets/allergens/allergen-mustard.svg?react'
-import SulphitesIcon from '../../assets/allergens/allergen-sulphites.svg?react'
-
-const ALLERGEN_ICONS = {
-  Gluten: GlutenIcon,
-  Milk: MilkIcon,
-  Egg: EggIcon,
-  Soy: SoyIcon,
-  Nuts: NutsIcon,
-  Sesame: SesameIcon,
-  Mustard: MustardIcon,
-  Sulphites: SulphitesIcon,
-}
+import { ALLERGEN_ICONS } from '../icons/AllergenIcons'
 
 function AllergenIconRow({ allergens }) {
   const [hovered, setHovered] = useState(false)
   if (!allergens || allergens.length === 0) return null
   return (
     <div
-      style={{ position: 'relative', display: 'inline-flex', gap: '3px', alignItems: 'center', marginBottom: '0.4rem', cursor: 'default' }}
+      style={{ position: 'relative', display: 'inline-flex', gap: '3px', alignItems: 'center', marginBottom: '0.4rem', cursor: 'default', color: '#933C3C' }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
       {allergens.map(a => {
         const Icon = ALLERGEN_ICONS[a]
-        return Icon ? <Icon key={a} width={16} height={16} style={{ color: '#933C3C' }} /> : null
+        return Icon ? <Icon key={a} /> : null
       })}
       {hovered && (
         <div style={{
@@ -180,7 +162,7 @@ export default function CartSidebar({ navVisible }) {
                       {/* Name + total */}
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.2rem' }}>
                         <span className="font-zodiak" style={{ fontSize: '0.85rem', color: '#1a1a1a', fontWeight: 'bold' }}>
-                          {item.name}
+                          {item.isPotd ? `${item.name} (Pizza of the Day)` : item.name}
                         </span>
                         <span className="font-zodiak" style={{ fontSize: '0.85rem', color: '#1a1a1a' }}>
                           ${itemTotal.toFixed(2)}
@@ -226,17 +208,25 @@ export default function CartSidebar({ navVisible }) {
                       {/* Quantity controls + remove */}
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                          <button
-                            onClick={() => updateQuantity(index, item.quantity - 1)}
-                            style={{ background: 'none', border: '1px solid #ccc', color: '#1a1a1a', width: '22px', height: '22px', borderRadius: '3px', cursor: 'pointer', fontSize: '0.85rem', lineHeight: 1 }}
-                          >−</button>
-                          <span className="font-zodiak" style={{ fontSize: '0.85rem', color: '#1a1a1a', minWidth: '1rem', textAlign: 'center' }}>
-                            {item.quantity}
-                          </span>
-                          <button
-                            onClick={() => updateQuantity(index, item.quantity + 1)}
-                            style={{ background: 'none', border: '1px solid #ccc', color: '#1a1a1a', width: '22px', height: '22px', borderRadius: '3px', cursor: 'pointer', fontSize: '0.85rem', lineHeight: 1 }}
-                          >+</button>
+                          {item.isPotd ? (
+                            <span className="font-zodiak" style={{ fontSize: '0.85rem', color: '#1a1a1a', minWidth: '1rem', textAlign: 'center' }}>
+                              {item.quantity}
+                            </span>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => updateQuantity(index, item.quantity - 1)}
+                                style={{ background: 'none', border: '1px solid #ccc', color: '#1a1a1a', width: '22px', height: '22px', borderRadius: '3px', cursor: 'pointer', fontSize: '0.85rem', lineHeight: 1 }}
+                              >−</button>
+                              <span className="font-zodiak" style={{ fontSize: '0.85rem', color: '#1a1a1a', minWidth: '1rem', textAlign: 'center' }}>
+                                {item.quantity}
+                              </span>
+                              <button
+                                onClick={() => updateQuantity(index, item.quantity + 1)}
+                                style={{ background: 'none', border: '1px solid #ccc', color: '#1a1a1a', width: '22px', height: '22px', borderRadius: '3px', cursor: 'pointer', fontSize: '0.85rem', lineHeight: 1 }}
+                              >+</button>
+                            </>
+                          )}
                         </div>
                         <button
                           onClick={() => removeItem(index)}

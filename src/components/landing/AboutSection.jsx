@@ -1,4 +1,4 @@
-import godImage from '../../assets/pizza-god-image.png'
+import godImage from '../../assets/pizza-god-image.webp'
 
 export default function AboutSection({ visible }) {
   return (
@@ -29,15 +29,14 @@ export default function AboutSection({ visible }) {
           <h2
             className="font-zodiak"
             style={{
-              fontSize: '2.5rem',
-              fontWeight: 'bold',
-              letterSpacing: '0.1em',
+              fontSize: '2.75rem',
+              fontWeight: 600,
+              letterSpacing: '0',
               color: '#1a1a1a',
-              textTransform: 'uppercase',
               margin: 0,
             }}
           >
-            ABOUT US
+            About Us
           </h2>
           <p className="font-zodiak" style={{ fontSize: '1rem', color: '#1a1a1a', lineHeight: '1.8', margin: 0 }}>
             Before Pizza God existed, "Oh my God!" was the thing our chef heard most after serving a pizza. So we kept the name.

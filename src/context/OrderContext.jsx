@@ -1,4 +1,5 @@
 import { createContext, useContext, useReducer } from "react"
+import { getDailyPizza, POTD_DISCOUNT_MULTIPLIER } from "../utils/dailyPizza"
 
 const initialState = {
   people: 1,
@@ -28,9 +29,32 @@ function orderReducer(state, action) {
       return { ...state, dietary: action.payload }
 
     case "ADD_TO_CART": {
+      const isTodaysPotd = action.payload.id === getDailyPizza().id
+      const existingPotdLine = state.cartItems.find(
+        (item) => item.id === action.payload.id && item.isPotd
+      )
+
+      // Today's PotD, not yet in the cart: routes to its own discounted, singleton line.
+      if (isTodaysPotd && !existingPotdLine) {
+        return {
+          ...state,
+          cartItems: [
+            ...state.cartItems,
+            {
+              ...action.payload,
+              price: +(action.payload.price * POTD_DISCOUNT_MULTIPLIER).toFixed(2),
+              isPotd: true,
+              quantity: 1,
+            },
+          ],
+        }
+      }
+
+      // Otherwise (not today's PotD, or its PotD line already exists): regular full-price line.
       const existing = state.cartItems.find(
         (item) =>
           item.id === action.payload.id &&
+          !item.isPotd &&
           item.dough === action.payload.dough &&
           item.cheese === action.payload.cheese &&
           JSON.stringify(item.extras ?? {}) === JSON.stringify(action.payload.extras ?? {})
@@ -47,7 +71,7 @@ function orderReducer(state, action) {
       }
       return {
         ...state,
-        cartItems: [...state.cartItems, { ...action.payload, quantity: 1 }],
+        cartItems: [...state.cartItems, { ...action.payload, isPotd: false, quantity: 1 }],
       }
     }
 
