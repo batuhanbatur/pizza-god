@@ -5,7 +5,7 @@ export const MENU = {
       {
         id: "margherita",
         name: "Margherita",
-        tagline: "What else could you expect for the first item?",
+        tagline: "Yeah, sure.",
         description: "Tomato sauce, mozzarella, basil",
         price: 12.99,
         allergens: ["Gluten", "Milk"],
@@ -14,7 +14,7 @@ export const MENU = {
       {
         id: "pepperoni",
         name: "Pepperoni",
-        tagline: "expecting one-liner",
+        tagline: "The default answer to a question nobody asked.",
         description: "Tomato sauce, mozzarella, pepperoni",
         price: 14.99,
         allergens: ["Gluten", "Milk"],
@@ -24,7 +24,7 @@ export const MENU = {
         id: "four-cheese",
         name: "4Chee",
         description: "Mozzarella, cheddar, parmesan, gorgonzola",
-        tagline: "expecting one-liner",
+        tagline: "A supergroup of cheeses. No egos. Mostly.",
         price: 15.99,
         allergens: ["Gluten", "Milk"],
         tags: ["Vegetarian"],
@@ -66,14 +66,39 @@ export const CHEESE_OPTIONS = [
 // Maps a modification option id to the allergens choosing it removes from a pizza.
 // Shared by the client (enrichment) and api/pizzabot.js (prompt) so both agree on intent.
 export const OPTION_REMOVES = {
-  'gluten-free': ['Gluten'],
-  'vegan': ['Milk'],
+  "gluten-free": ["Gluten"],
+  vegan: ["Milk"],
 }
 
 export const EXTRAS = [
-  { id: 'poppers', label: 'Jalapeño Poppers', price: 3.99, allergens: ['Gluten', 'Milk', 'Egg'] },
-  { id: 'extra-mozzarella', label: 'Extra Mozzarella', price: 1.99, allergens: ['Milk'] },
-  { id: 'pesto-drizzle', label: 'Pesto Drizzle', price: 1.49, allergens: ['Nuts', 'Milk'] },
-  { id: 'garlic-sauce', label: 'Garlic Sauce', price: 0.99, allergens: ['Egg'] },
-  { id: 'bbq-sauce', label: 'BBQ Sauce', price: 0.99, allergens: ['Sulphites'] },
+  {
+    id: "poppers",
+    label: "Jalapeño Poppers",
+    price: 3.99,
+    allergens: ["Gluten", "Milk", "Egg"],
+  },
+  {
+    id: "extra-mozzarella",
+    label: "Extra Mozzarella",
+    price: 1.99,
+    allergens: ["Milk"],
+  },
+  {
+    id: "pesto-drizzle",
+    label: "Pesto Drizzle",
+    price: 1.49,
+    allergens: ["Nuts", "Milk"],
+  },
+  {
+    id: "garlic-sauce",
+    label: "Garlic Sauce",
+    price: 0.99,
+    allergens: ["Egg"],
+  },
+  {
+    id: "bbq-sauce",
+    label: "BBQ Sauce",
+    price: 0.99,
+    allergens: ["Sulphites"],
+  },
 ]
