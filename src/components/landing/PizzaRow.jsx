@@ -4,6 +4,7 @@ import { useOrder } from '../../context/OrderContext'
 import AllergenBadge from '../ui/AllergenBadge'
 import { AccessibilityContext } from '../../context/AccessibilityContext'
 import Drip from '../graffiti/Drip'
+import useIsMobile from '../../hooks/useIsMobile'
 
 function SprayLine({ style }) {
   return (
@@ -54,11 +55,13 @@ const FONT_MAP = {
 export default function PizzaRow({ pizza, discountedPrice, isPotd = false, soldOut = false, onOrder }) {
   const { dispatch } = useOrder()
   const { reduceGraffiti } = useContext(AccessibilityContext)
+  const isMobile = useIsMobile()
   const nameFont = FONT_MAP[pizza.id] || 'font-zodiak'
 
   const [dough, setDough] = useState('regular')
   const [cheese, setCheese] = useState('mozzarella')
   const [selectedExtras, setSelectedExtras] = useState({})
+  const [extrasOpen, setExtrasOpen] = useState(false)
 
   const effectivePrice = discountedPrice ?? pizza.price
 
@@ -95,7 +98,7 @@ export default function PizzaRow({ pizza, discountedPrice, isPotd = false, soldO
     <div style={{ paddingTop: '2.5rem', paddingBottom: '2.5rem' }}>
 
       {/* Name + price */}
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: '1.5rem', marginBottom: '0.3rem' }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: '1.5rem', marginBottom: '0.3rem', flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
         <span className={nameFont} style={{ fontSize: '1.8rem', fontWeight: '900', letterSpacing: '0.1em', color: '#1a1a1a', textTransform: 'uppercase' }}>
           {pizza.name}
         </span>
@@ -163,8 +166,8 @@ export default function PizzaRow({ pizza, discountedPrice, isPotd = false, soldO
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginBottom: '1.25rem' }}>
 
         {/* Dough */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span className="font-zodiak" style={{ color: '#aaa', fontSize: '0.75rem', width: '80px' }}>Dough</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
+          <span className="font-zodiak" style={{ color: '#aaa', fontSize: '0.75rem', width: isMobile ? 'auto' : '80px' }}>Dough</span>
           {DOUGH_OPTIONS.map((opt, i) => (
             <div key={opt.id} style={{ position: 'relative', display: 'inline-block' }}>
               <OptionButton label={opt.label} selected={dough === opt.id} onClick={() => setDough(opt.id)} />
@@ -178,8 +181,8 @@ export default function PizzaRow({ pizza, discountedPrice, isPotd = false, soldO
         </div>
 
         {/* Cheese */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span className="font-zodiak" style={{ color: '#aaa', fontSize: '0.75rem', width: '80px' }}>Cheese</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
+          <span className="font-zodiak" style={{ color: '#aaa', fontSize: '0.75rem', width: isMobile ? 'auto' : '80px' }}>Cheese</span>
           {CHEESE_OPTIONS.map((opt, i) => (
             <div key={opt.id} style={{ position: 'relative', display: 'inline-block' }}>
               <OptionButton label={opt.label} selected={cheese === opt.id} onClick={() => setCheese(opt.id)} />
@@ -194,34 +197,79 @@ export default function PizzaRow({ pizza, discountedPrice, isPotd = false, soldO
 
         {/* Extras */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-          <span className="font-zodiak" style={{ color: '#aaa', fontSize: '0.75rem' }}>Extras</span>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', alignItems: 'flex-start' }}>
-            {EXTRAS.map(extra => {
-              const qty = selectedExtras[extra.id]
-              const isSelected = qty !== undefined
+          {(() => {
+            const extraChips = (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', alignItems: 'flex-start' }}>
+                {EXTRAS.map(extra => {
+                  const qty = selectedExtras[extra.id]
+                  const isSelected = qty !== undefined
+                  return (
+                    <div key={extra.id}>
+                      {!isSelected ? (
+                        <button
+                          onClick={() => setSelectedExtras(prev => ({ ...prev, [extra.id]: 1 }))}
+                          style={{ background: 'none', border: '1px solid #555', color: '#888', padding: '0.3rem 0.8rem', borderRadius: '3px', cursor: 'pointer', fontSize: '0.8rem', fontFamily: 'inherit' }}
+                        >
+                          {extra.label} +${extra.price.toFixed(2)}
+                        </button>
+                      ) : (
+                        <button
+                          className="font-zodiak"
+                          onClick={() => setSelectedExtras(prev => { const n = { ...prev }; delete n[extra.id]; return n })}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', background: 'none', border: '1px solid #1a1a1a', color: '#1a1a1a', fontWeight: 'bold', fontSize: '0.8rem', fontFamily: 'inherit', padding: '0.3rem 0.6rem 0.3rem 0.8rem', borderRadius: '3px', cursor: 'pointer' }}
+                        >
+                          {extra.label}
+                          <span style={{ color: '#933C3C', fontSize: '1rem', lineHeight: 1 }}>×</span>
+                        </button>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )
+
+            if (!isMobile) {
               return (
-                <div key={extra.id}>
-                  {!isSelected ? (
-                    <button
-                      onClick={() => setSelectedExtras(prev => ({ ...prev, [extra.id]: 1 }))}
-                      style={{ background: 'none', border: '1px solid #555', color: '#888', padding: '0.3rem 0.8rem', borderRadius: '3px', cursor: 'pointer', fontSize: '0.8rem', fontFamily: 'inherit' }}
-                    >
-                      {extra.label} +${extra.price.toFixed(2)}
-                    </button>
-                  ) : (
-                    <button
-                      className="font-zodiak"
-                      onClick={() => setSelectedExtras(prev => { const n = { ...prev }; delete n[extra.id]; return n })}
-                      style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', background: 'none', border: '1px solid #1a1a1a', color: '#1a1a1a', fontWeight: 'bold', fontSize: '0.8rem', fontFamily: 'inherit', padding: '0.3rem 0.6rem 0.3rem 0.8rem', borderRadius: '3px', cursor: 'pointer' }}
-                    >
-                      {extra.label}
-                      <span style={{ color: '#933C3C', fontSize: '1rem', lineHeight: 1 }}>×</span>
-                    </button>
-                  )}
-                </div>
+                <>
+                  <span className="font-zodiak" style={{ color: '#aaa', fontSize: '0.75rem' }}>Extras</span>
+                  {extraChips}
+                </>
               )
-            })}
-          </div>
+            }
+
+            const selectedCount = Object.keys(selectedExtras).length
+            return (
+              <>
+                <button
+                  onClick={() => setExtrasOpen(v => !v)}
+                  className="font-zodiak"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.35rem',
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    cursor: 'pointer',
+                    color: '#aaa',
+                    fontSize: '0.75rem',
+                    fontFamily: 'inherit',
+                  }}
+                >
+                  <span>Extras{selectedCount > 0 ? ` · ${selectedCount}` : ''}</span>
+                  <svg
+                    width="10" height="10" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                    style={{ transform: extrasOpen ? 'rotate(45deg)' : 'rotate(0deg)', transition: 'transform 0.15s' }}
+                  >
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                  </svg>
+                </button>
+                {extrasOpen && extraChips}
+              </>
+            )
+          })()}
         </div>
       </div>
 
