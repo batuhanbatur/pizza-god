@@ -2,15 +2,16 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import "./GraffitiButton.css";
 
-export default function GraffitiButton({ children = "Order Yourself", onClick }) {
-  const [hovered, setHovered] = useState(false);
+export default function GraffitiButton({ children = "Order Yourself", onClick, forceHover = false }) {
+  const [mouseHovered, setMouseHovered] = useState(false);
+  const hovered = mouseHovered || forceHover;
 
   return (
     <motion.button
       className="graffiti-button"
       onClick={onClick}
-      onHoverStart={() => setHovered(true)}
-      onHoverEnd={() => setHovered(false)}
+      onHoverStart={() => setMouseHovered(true)}
+      onHoverEnd={() => setMouseHovered(false)}
     >
       <span className={`classic-text ${hovered ? "hide" : ""}`}>
         {children}

@@ -1,28 +1,31 @@
 import godImage from '../../assets/pizza-god-image.webp'
+import useIsMobile from '../../hooks/useIsMobile'
 
 export default function AboutSection({ visible }) {
+  const isMobile = useIsMobile()
+
   return (
     <div
       id="about-us"
       style={{
-        marginLeft: '220px',
-        marginRight: '220px',
+        marginLeft: isMobile ? '20px' : '220px',
+        marginRight: isMobile ? '20px' : '220px',
         opacity: visible ? 1 : 0,
         transition: 'opacity 0.4s',
         paddingTop: '160px',
         paddingBottom: '80px',
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '24px' }}>
+      <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: 'flex-start', gap: '24px' }}>
         <img
           src={godImage}
           alt="Pizza God"
           style={{
-            width: '750px',
-            height: '780px',
+            width: isMobile ? '100%' : '750px',
+            height: isMobile ? 'auto' : '780px',
             objectFit: 'cover',
             objectPosition: 'center',
-            flexShrink: 0,
+            flexShrink: isMobile ? undefined : 0,
           }}
         />
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', paddingTop: '1rem' }}>

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useOrder } from '../../context/OrderContext'
 import { EXTRAS } from '../../data/menu'
 import { ALLERGEN_ICONS } from '../icons/AllergenIcons'
+import useIsMobile from '../../hooks/useIsMobile'
 
 function AllergenIconRow({ allergens }) {
   const [hovered, setHovered] = useState(false)
@@ -44,9 +45,18 @@ const PAYMENT_OPTIONS = [
   { id: 'online', label: 'Online Payment' },
 ]
 
-export default function CartSidebar({ navVisible }) {
+// Mobile cart button + drawer sizing — mirrors SideNav's hamburger/drawer exactly.
+const MOBILE_CART_BUTTON_SIZE_PX = 44
+const MOBILE_CART_BUTTON_OFFSET_PX = 16
+const MOBILE_DRAWER_WIDTH = 'min(75vw, 300px)'
+// Pill sits directly below the cart button on mobile: button offset + button size + gap.
+const MOBILE_PILL_GAP_PX = 8
+const MOBILE_PILL_TOP_PX = MOBILE_CART_BUTTON_OFFSET_PX + MOBILE_CART_BUTTON_SIZE_PX + MOBILE_PILL_GAP_PX
+
+export default function CartSidebar({ navVisible, isOpen, onOpen, onClose }) {
   const { order, removeItem, updateQuantity, updateItemExtraQuantity } = useOrder()
   const { cartItems } = order
+  const isMobile = useIsMobile()
 
   const [checkoutMode, setCheckoutMode] = useState(false)
   const [address, setAddress] = useState({ name: '', street: '', city: '', zip: '' })
@@ -64,6 +74,15 @@ export default function CartSidebar({ navVisible }) {
   const showFull = navVisible && cartCount > 0
   const showPill = !navVisible && cartCount > 0
 
+  // Unlike the desktop panel (which hides entirely when empty via showFull), the
+  // mobile button must stay visible even with an empty cart — same rule as the
+  // hamburger, gated purely on navVisible. The drawer shows an empty state instead.
+  const mobileCartButtonVisible = navVisible
+
+  const panelWidth = isMobile
+    ? (checkoutMode ? '100vw' : MOBILE_DRAWER_WIDTH)
+    : (checkoutMode ? '480px' : '220px')
+
   const inputStyle = {
     fontFamily: 'inherit',
     fontSize: '0.85rem',
@@ -79,15 +98,15 @@ export default function CartSidebar({ navVisible }) {
 
   return (
     <>
-      {/* Minimized pill — shown on hero */}
+      {/* Minimized pill — shown on hero, all viewports */}
       <button
         onClick={() => document.getElementById('pizzas').scrollIntoView({ behavior: 'smooth' })}
         className="font-zodiak"
         style={{
           position: 'fixed',
-          right: '24px',
-          top: '50%',
-          transform: 'translateY(-50%)',
+          ...(isMobile
+            ? { right: `${MOBILE_CART_BUTTON_OFFSET_PX}px`, top: `${MOBILE_PILL_TOP_PX}px` }
+            : { right: '24px', top: '50%', transform: 'translateY(-50%)' }),
           backgroundColor: '#39FF14',
           color: '#000',
           border: 'none',
@@ -106,28 +125,109 @@ export default function CartSidebar({ navVisible }) {
         CART · {cartCount}
       </button>
 
-      {/* Full sidebar */}
+      {/* Mobile cart button — mirrors SideNav's hamburger, fixed top-right */}
+      {isMobile && (
+        <button
+          onClick={() => (isOpen ? onClose() : onOpen())}
+          aria-label="Open cart"
+          style={{
+            position: 'fixed',
+            top: `${MOBILE_CART_BUTTON_OFFSET_PX}px`,
+            right: `${MOBILE_CART_BUTTON_OFFSET_PX}px`,
+            width: `${MOBILE_CART_BUTTON_SIZE_PX}px`,
+            height: `${MOBILE_CART_BUTTON_SIZE_PX}px`,
+            borderRadius: '50%',
+            backgroundColor: '#F7F2F6',
+            border: '1px solid #ccc',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            zIndex: 68,
+            opacity: mobileCartButtonVisible ? 1 : 0,
+            pointerEvents: mobileCartButtonVisible ? 'auto' : 'none',
+            transition: 'opacity 0.4s',
+            padding: 0,
+          }}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="9" cy="21" r="1" />
+            <circle cx="20" cy="21" r="1" />
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+          </svg>
+        </button>
+      )}
+
+      {/* Backdrop — mobile drawer only */}
+      {isMobile && (
+        <div
+          onClick={onClose}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            zIndex: 65,
+            opacity: isOpen ? 1 : 0,
+            pointerEvents: isOpen ? 'auto' : 'none',
+            transition: 'opacity 0.3s',
+          }}
+        />
+      )}
+
+      {/* Full sidebar / mobile drawer */}
       <div style={{
         position: 'fixed',
         top: 0,
         right: 0,
-        width: checkoutMode ? '480px' : '220px',
+        width: panelWidth,
         height: '100vh',
         backgroundColor: '#F7F2F6',
-        zIndex: 40,
+        zIndex: isMobile ? 70 : 40,
         display: 'flex',
         flexDirection: 'column',
         padding: '1.5rem 1rem',
-        opacity: showFull ? 1 : 0,
-        pointerEvents: showFull ? 'auto' : 'none',
-        transition: 'opacity 0.4s, width 0.3s ease',
         overflowX: 'hidden',
+        ...(isMobile
+          ? {
+              transform: `translateX(${isOpen ? '0%' : '100%'})`,
+              transition: 'transform 0.3s ease, width 0.3s ease',
+            }
+          : {
+              opacity: showFull ? 1 : 0,
+              pointerEvents: showFull ? 'auto' : 'none',
+              transition: 'opacity 0.4s, width 0.3s ease',
+            }),
       }}>
+
+        {/* Close button — mobile drawer only, top-left (mirrored from menu drawer's top-right) */}
+        {isMobile && (
+          <button
+            onClick={onClose}
+            aria-label="Close cart"
+            style={{
+              position: 'absolute',
+              top: '12px',
+              left: '12px',
+              width: '32px',
+              height: '32px',
+              background: 'none',
+              border: 'none',
+              color: '#555',
+              fontSize: '1.5rem',
+              lineHeight: 1,
+              cursor: 'pointer',
+              padding: 0,
+              zIndex: 1,
+            }}
+          >
+            &times;
+          </button>
+        )}
 
         {!checkoutMode ? (
           <>
             {/* Header */}
-            <div style={{ marginBottom: '0.75rem' }}>
+            <div style={{ marginBottom: '0.75rem', paddingLeft: isMobile ? '28px' : 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
                 <span className="font-zodiak" style={{ fontSize: '0.7rem', letterSpacing: '0.15em', color: '#555', textTransform: 'uppercase' }}>
                   Your Cart
@@ -146,6 +246,35 @@ export default function CartSidebar({ navVisible }) {
               <div style={{ height: '1px', backgroundColor: '#ddd' }} />
             </div>
 
+            {cartItems.length === 0 ? (
+              /* Empty state */
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem', textAlign: 'center', padding: '0 1rem' }}>
+                <span className="font-zodiak" style={{ fontSize: '0.9rem', color: '#888' }}>
+                  Your Cart is Empty
+                </span>
+                <button
+                  onClick={() => {
+                    document.getElementById('pizzas')?.scrollIntoView({ behavior: 'smooth' })
+                    onClose()
+                  }}
+                  className="font-zodiak"
+                  style={{
+                    backgroundColor: '#39FF14',
+                    color: '#000',
+                    fontWeight: 'bold',
+                    padding: '0.6rem 1.2rem',
+                    borderRadius: '3px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '0.8rem',
+                    letterSpacing: '0.05em',
+                  }}
+                >
+                  Check out our pizzas
+                </button>
+              </div>
+            ) : (
+              <>
             {/* Scrollable item list */}
             <div style={{ overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column' }}>
               {cartItems.map((item, index) => {
@@ -271,11 +400,13 @@ export default function CartSidebar({ navVisible }) {
                 Checkout →
               </button>
             </div>
+              </>
+            )}
           </>
         ) : (
           <>
             {/* Checkout header */}
-            <div style={{ marginBottom: '0.75rem' }}>
+            <div style={{ marginBottom: '0.75rem', paddingLeft: isMobile ? '28px' : 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
                 <span className="font-zodiak" style={{ fontFamily: 'inherit', fontSize: '0.7rem', letterSpacing: '0.15em', color: '#555', textTransform: 'uppercase' }}>
                   Checkout

@@ -13,6 +13,15 @@ export default function Landing() {
   const [scrollProgress, setScrollProgress] = useState(0)
   const [windowHeight, setWindowHeight] = useState(window.innerHeight)
   const [navVisible, setNavVisible] = useState(false)
+  const [openPanel, setOpenPanel] = useState(null) // 'menu' | 'cart' | null — exclusive by construction
+
+  // Body scroll lock while either mobile drawer is open; restored on close/unmount.
+  useEffect(() => {
+    document.body.style.overflow = openPanel ? 'hidden' : ''
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [openPanel])
 
   useEffect(() => {
     [logoOrder, logoAi].forEach(src => {
@@ -55,8 +64,18 @@ export default function Landing() {
         navVisible={navVisible}
       />
 
-      <SideNav />
-      <CartSidebar navVisible={navVisible} />
+      <SideNav
+        navVisible={navVisible}
+        isOpen={openPanel === 'menu'}
+        onOpen={() => setOpenPanel('menu')}
+        onClose={() => setOpenPanel(null)}
+      />
+      <CartSidebar
+        navVisible={navVisible}
+        isOpen={openPanel === 'cart'}
+        onOpen={() => setOpenPanel('cart')}
+        onClose={() => setOpenPanel(null)}
+      />
       <PizzaSection visible={navVisible} />
 
       <PizzaOfTheDaySection visible={navVisible} />
