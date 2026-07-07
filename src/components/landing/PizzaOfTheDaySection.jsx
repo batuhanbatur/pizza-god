@@ -1,24 +1,23 @@
-import { useState } from 'react'
-import { getDailyPizza, getTodayKey, POTD_DISCOUNT_MULTIPLIER } from '../../utils/dailyPizza'
+import { getDailyPizza, POTD_DISCOUNT_MULTIPLIER } from '../../utils/dailyPizza'
 import PizzaRow from './PizzaRow'
+import useIsMobile from '../../hooks/useIsMobile'
+import { useOrder } from '../../context/OrderContext'
 
 export default function PizzaOfTheDaySection({ visible }) {
   const pizza = getDailyPizza()
-  const todayKey = getTodayKey()
-  const [remaining, setRemaining] = useState(() => {
-    const stored = localStorage.getItem(todayKey)
-    return stored !== null ? parseInt(stored) : 20
-  })
+  const isMobile = useIsMobile()
+  const { order } = useOrder()
+  const remaining = order.potdRemaining
 
   return (
     <div
       id="pizza-of-the-day"
       style={{
-        marginLeft: '220px',
-        marginRight: '320px',
-        paddingLeft: '80px',
-        paddingRight: '80px',
-        paddingTop: '160px',
+        marginLeft: isMobile ? 0 : '220px',
+        marginRight: isMobile ? 0 : '320px',
+        paddingLeft: isMobile ? '20px' : '80px',
+        paddingRight: isMobile ? '20px' : '80px',
+        paddingTop: isMobile ? '80px' : '160px',
         paddingBottom: '80px',
         minHeight: '100vh',
         opacity: visible ? 1 : 0,
@@ -27,33 +26,35 @@ export default function PizzaOfTheDaySection({ visible }) {
     >
       <div style={{
         display: 'flex',
+        flexDirection: isMobile ? 'column' : 'row',
         alignItems: 'center',
-        gap: '1rem',
-        marginBottom: '3rem',
+        gap: isMobile ? '0.5rem' : '1rem',
+        marginBottom: isMobile ? '1.25rem' : '3rem',
       }}>
         <img
           src="/pizza-of-the-day-clock.svg"
           alt=""
-          style={{ height: '7rem', width: 'auto', pointerEvents: 'none' }}
+          style={{ height: isMobile ? '6.75rem' : '7rem', width: 'auto', pointerEvents: 'none' }}
         />
         <h2 className="font-zodiak" style={{
-          fontSize: '2.75rem',
+          fontSize: isMobile ? '2rem' : '2.75rem',
           fontWeight: 600,
           letterSpacing: '0',
           color: '#1a1a1a',
           margin: 0,
+          textAlign: isMobile ? 'center' : 'left',
         }}>
           Pizza of the Day
         </h2>
       </div>
 
       <div style={{
-        marginBottom: '3rem',
-        paddingBottom: '2rem',
-        borderBottom: '1px solid #ccc',
+        marginBottom: isMobile ? '1.25rem' : '3rem',
+        paddingBottom: isMobile ? 0 : '2rem',
+        borderBottom: isMobile ? 'none' : '1px solid #ccc',
       }}>
         <p className="font-zodiak" style={{
-          fontSize: '1rem',
+          fontSize: isMobile ? '0.875rem' : '1rem',
           color: '#555',
           lineHeight: '1.8',
           maxWidth: '100%',
@@ -78,11 +79,6 @@ export default function PizzaOfTheDaySection({ visible }) {
         discountedPrice={+(pizza.price * POTD_DISCOUNT_MULTIPLIER).toFixed(2)}
         isPotd={false}
         soldOut={remaining === 0}
-        onOrder={() => {
-          const newRemaining = remaining - 1
-          setRemaining(newRemaining)
-          localStorage.setItem(todayKey, newRemaining)
-        }}
       />
     </div>
   )

@@ -54,7 +54,9 @@ const FONT_MAP = {
 }
 
 export default function PizzaRow({ pizza, discountedPrice, isPotd = false, soldOut = false, onOrder }) {
-  const { dispatch } = useOrder()
+  const { order, dispatch } = useOrder()
+  const alreadyInCartAsPotd = discountedPrice !== undefined
+    && order.cartItems.some((item) => item.id === pizza.id && item.isPotd)
   const { reduceGraffiti } = useContext(AccessibilityContext)
   const isMobile = useIsMobile()
   const nameFont = FONT_MAP[pizza.id] || 'font-zodiak'
@@ -285,6 +287,10 @@ export default function PizzaRow({ pizza, discountedPrice, isPotd = false, soldO
         {soldOut ? (
           <button disabled style={{ backgroundColor: '#ccc', color: '#888', border: 'none', padding: '0.6rem 1.5rem', borderRadius: '3px', cursor: 'not-allowed', fontWeight: 'bold', fontSize: '0.95rem' }}>
             Sold Out
+          </button>
+        ) : alreadyInCartAsPotd ? (
+          <button disabled style={{ backgroundColor: '#ccc', color: '#888', border: 'none', padding: '0.6rem 1.5rem', borderRadius: '3px', cursor: 'not-allowed', fontWeight: 'bold', fontSize: '0.95rem' }}>
+            In Cart
           </button>
         ) : (
           <button

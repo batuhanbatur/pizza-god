@@ -1,5 +1,5 @@
 import { createContext, useContext, useReducer } from "react"
-import { getDailyPizza, POTD_DISCOUNT_MULTIPLIER } from "../utils/dailyPizza"
+import { getDailyPizza, getTodayKey, POTD_DISCOUNT_MULTIPLIER } from "../utils/dailyPizza"
 
 const initialState = {
   people: 1,
@@ -11,6 +11,12 @@ const initialState = {
   cartItems: [],
   deliveryMethod: 'delivery',
   customerInfo: { name: '', address: '' },
+  potdRemaining: 20,
+}
+
+function getInitialPotdRemaining() {
+  const stored = localStorage.getItem(getTodayKey())
+  return stored !== null ? parseInt(stored) : 20
 }
 
 function orderReducer(state, action) {
@@ -50,7 +56,12 @@ function orderReducer(state, action) {
         }
       }
 
-      // Otherwise (not today's PotD, or its PotD line already exists): regular full-price line.
+      // One per customer: today's PotD is already in the cart — block re-adding it entirely.
+      if (isTodaysPotd && existingPotdLine) {
+        return state
+      }
+
+      // Otherwise (not today's PotD): regular full-price line.
       const existing = state.cartItems.find(
         (item) =>
           item.id === action.payload.id &&
@@ -117,6 +128,14 @@ function orderReducer(state, action) {
     case "CLEAR_CART":
       return { ...state, cartItems: [] }
 
+    case "COMPLETE_ORDER": {
+      const potdItem = state.cartItems.find((item) => item.isPotd)
+      if (!potdItem) return state
+      const newRemaining = Math.max(0, state.potdRemaining - potdItem.quantity)
+      localStorage.setItem(getTodayKey(), newRemaining)
+      return { ...state, potdRemaining: newRemaining }
+    }
+
     case 'SET_DELIVERY_METHOD': return { ...state, deliveryMethod: action.payload }
     case 'SET_CUSTOMER_INFO': return { ...state, customerInfo: { ...state.customerInfo, ...action.payload } }
     case 'SET_CART_ITEMS':
@@ -130,15 +149,19 @@ function orderReducer(state, action) {
 const OrderContext = createContext(null)
 
 export function OrderProvider({ children }) {
-  const [order, dispatch] = useReducer(orderReducer, initialState)
+  const [order, dispatch] = useReducer(orderReducer, initialState, (init) => ({
+    ...init,
+    potdRemaining: getInitialPotdRemaining(),
+  }))
 
   const addItem = (item) => dispatch({ type: 'ADD_TO_CART', payload: item })
   const removeItem = (index) => dispatch({ type: 'REMOVE_FROM_CART', payload: index })
   const updateQuantity = (index, quantity) => dispatch({ type: 'UPDATE_QUANTITY', payload: { index, quantity } })
   const updateItemExtraQuantity = (index, extraId, quantity) => dispatch({ type: 'UPDATE_ITEM_EXTRA_QUANTITY', payload: { index, extraId, quantity } })
+  const completeOrder = () => dispatch({ type: 'COMPLETE_ORDER' })
 
   return (
-    <OrderContext.Provider value={{ order, dispatch, addItem, removeItem, updateQuantity, updateItemExtraQuantity }}>
+    <OrderContext.Provider value={{ order, dispatch, addItem, removeItem, updateQuantity, updateItemExtraQuantity, completeOrder }}>
       {children}
     </OrderContext.Provider>
   )

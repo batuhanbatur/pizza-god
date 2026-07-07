@@ -39,6 +39,45 @@ function AllergenIconRow({ allergens }) {
   )
 }
 
+function OrderSummaryLine({ item }) {
+  const extrasEntries = Object.entries(item.extras || {})
+  const extrasPrice = extrasEntries.reduce((s, [id, qty]) => {
+    const extra = EXTRAS.find(e => e.id === id)
+    return s + (extra ? extra.price * qty : 0)
+  }, 0)
+  const itemTotal = (item.price + extrasPrice) * item.quantity
+
+  const configParts = [
+    item.dough === 'gluten-free' ? 'GF Dough' : 'Regular',
+    item.cheese === 'vegan' ? 'Vegan' : 'Mozzarella',
+    ...extrasEntries.map(([id, qty]) => {
+      const extra = EXTRAS.find(e => e.id === id)
+      if (!extra) return null
+      return qty > 1 ? `${extra.label} ×${qty}` : extra.label
+    }).filter(Boolean),
+  ]
+
+  return (
+    <div style={{ paddingTop: '0.6rem', paddingBottom: '0.6rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.2rem' }}>
+        <span className="font-zodiak" style={{ fontSize: '0.85rem', color: '#1a1a1a', fontWeight: 'bold' }}>
+          {item.isPotd ? `${item.name} (Pizza of the Day)` : item.name}
+        </span>
+        <span className="font-zodiak" style={{ fontSize: '0.85rem', color: '#1a1a1a' }}>
+          ${itemTotal.toFixed(2)}
+        </span>
+      </div>
+      <div className="font-zodiak" style={{ fontSize: '0.75rem', color: '#888', marginBottom: '0.15rem' }}>
+        {configParts.join(' · ')}
+      </div>
+      <AllergenIconRow allergens={item.allergens} />
+      <div className="font-zodiak" style={{ fontSize: '0.75rem', color: '#888' }}>
+        × {item.quantity}
+      </div>
+    </div>
+  )
+}
+
 const PAYMENT_OPTIONS = [
   { id: 'cash', label: 'Cash' },
   { id: 'credit', label: 'Credit Card' },
@@ -54,7 +93,7 @@ const MOBILE_PILL_GAP_PX = 8
 const MOBILE_PILL_TOP_PX = MOBILE_CART_BUTTON_OFFSET_PX + MOBILE_CART_BUTTON_SIZE_PX + MOBILE_PILL_GAP_PX
 
 export default function CartSidebar({ navVisible, isOpen, onOpen, onClose }) {
-  const { order, removeItem, updateQuantity, updateItemExtraQuantity } = useOrder()
+  const { order, removeItem, updateQuantity, updateItemExtraQuantity, completeOrder } = useOrder()
   const { cartItems } = order
   const isMobile = useIsMobile()
 
@@ -422,9 +461,23 @@ export default function CartSidebar({ navVisible, isOpen, onOpen, onClose }) {
               <div style={{ height: '1px', backgroundColor: '#ddd' }} />
             </div>
 
-            {/* Collapsed cart summary */}
-            <div className="font-zodiak" style={{ fontSize: '0.8rem', color: '#888', marginBottom: '1rem' }}>
-              {cartItems.length} item{cartItems.length !== 1 ? 's' : ''} — ${cartTotal.toFixed(2)}
+            {/* Order summary — read-only, no steppers/remove */}
+            <div style={{ marginBottom: '1rem' }}>
+              {cartItems.map((item, index) => (
+                <div key={index}>
+                  <OrderSummaryLine item={item} />
+                  {index < cartItems.length - 1 && (
+                    <div style={{ height: '1px', backgroundColor: '#e8e8e8' }} />
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '1rem' }}>
+              <span className="font-zodiak" style={{ fontSize: '0.9rem', color: '#1a1a1a' }}>Total</span>
+              <span className="font-zodiak" style={{ fontSize: '0.9rem', fontWeight: 'bold', color: '#1a1a1a' }}>
+                ${cartTotal.toFixed(2)}
+              </span>
             </div>
 
             <div style={{ height: '1px', backgroundColor: '#ddd', marginBottom: '1.25rem' }} />
@@ -520,7 +573,10 @@ export default function CartSidebar({ navVisible, isOpen, onOpen, onClose }) {
               return (
                 <div style={{ borderTop: '1px solid #ddd', paddingTop: '1rem', marginTop: '0.5rem' }}>
                   <button
-                    onClick={() => console.log('order complete', { cart: cartItems, address, paymentMethod })}
+                    onClick={() => {
+                      completeOrder()
+                      console.log('order complete', { cart: cartItems, address, paymentMethod })
+                    }}
                     disabled={!formComplete}
                     className="font-zodiak"
                     style={{
