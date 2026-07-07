@@ -25,12 +25,13 @@ const RAYS = [
 // distance + length + ~30 (halo stroke + blur margin) stays under 250 (the
 // distance from FOCAL_MOBILE to any viewBox edge), so nothing clips.
 const RAYS_MOBILE = [
-  { angle: 170, distance: 145, length: 55 },  // far left, outer
-  { angle: 125, distance: 125, length: 70 },
-  { angle: 100, distance: 100, length: 45 },  // near top-center
-  { angle: 85, distance: 105, length: 65 },   // near top-center
-  { angle: 60, distance: 130, length: 50 },
-  { angle: 30, distance: 150, length: 60 },   // far right, outer
+  { angle: 163, distance: 125,  length: 48 },  // left flank, pulled up from 170
+  { angle: 147, distance: 98,  length: 62 },  // long one
+  { angle: 123, distance: 75,  length: 58 },  // short, tucked in
+  { angle: 92,  distance: 60,  length: 52 },
+  { angle: 57,  distance: 68,  length: 58  },  // short again
+  { angle: 29,  distance: 100, length: 60 },
+  { angle: 9,  distance: 120, length: 60 },  // right flank, longest reach
 ]
 
 // angle: degrees around the focal point (180 = left horizon, 90 = straight up, 0 = right horizon)
