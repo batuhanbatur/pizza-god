@@ -3,7 +3,7 @@ import logo from '../../assets/pizza-god-logo.webp'
 import logoOrder from '../../assets/order-yourself.webp'
 import logoAi from '../../assets/order-ai.webp'
 import GraffitiButton from '../ui/GraffitiButton'
-import PizzaBotModal from './PizzaBotModal'
+import PizzaBotModal from '../pizza-bot/PizzaBotModal'
 import useIsMobile from '../../hooks/useIsMobile'
 
 const MOBILE_LOGO_END_SCALE = 0.4
@@ -175,17 +175,34 @@ export default function Hero({ hoveredButton, setHoveredButton, scrollProgress, 
 
       {/* Hero section */}
       <div
-        className="flex items-end justify-center overflow-hidden"
-        style={{ height: '100vh', paddingBottom: '20vh', backgroundColor: 'black' }}
+        style={{
+          display: 'flex',
+          alignItems: 'flex-end',
+          justifyContent: 'center',
+          overflow: 'hidden',
+          height: '100vh',
+          paddingBottom: '20vh',
+          backgroundColor: 'black',
+        }}
       >
-        <div className={isMobile ? 'flex flex-col items-center' : 'flex items-start gap-0'}>
+        <div style={{
+          display: 'flex',
+          flexDirection: isMobile ? 'column' : 'row',
+          alignItems: isMobile ? 'center' : 'flex-start',
+          gap: 0,
+        }}>
 
           {/* Order Yourself button */}
           <div
-            className="flex flex-col items-center gap-3 px-12"
             onMouseEnter={() => setHoveredButton('order')}
             onMouseLeave={() => setHoveredButton(null)}
             style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '0.75rem',
+              paddingLeft: '3rem',
+              paddingRight: '3rem',
               position: isMobile ? 'fixed' : undefined,
               top: isMobile ? `${orderButtonTopMobile}px` : undefined,
               left: isMobile ? '50%' : undefined,
@@ -195,24 +212,34 @@ export default function Hero({ hoveredButton, setHoveredButton, scrollProgress, 
             }}
           >
             <GraffitiButton onClick={handleOrderYourself} forceHover={orderAutoHover}>Order Yourself</GraffitiButton>
-            <p className="font-zodiak text-white/50 text-sm text-center">
+            <p className="font-zodiak" style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.875rem', lineHeight: '1.25rem', textAlign: 'center' }}>
               You choose.
             </p>
           </div>
 
           {!isMobile && (
             <div
-              className="w-px bg-white/20 self-stretch mt-1"
-              style={{ opacity: scrollProgress > 0 ? 0 : 1 }}
+              style={{
+                width: '1px',
+                backgroundColor: 'rgba(255,255,255,0.2)',
+                alignSelf: 'stretch',
+                marginTop: '0.25rem',
+                opacity: scrollProgress > 0 ? 0 : 1,
+              }}
             />
           )}
 
           {/* AI Powered button */}
           <div
-            className="flex flex-col items-center gap-3 px-12"
             onMouseEnter={() => setHoveredButton('ai')}
             onMouseLeave={() => setHoveredButton(null)}
             style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '0.75rem',
+              paddingLeft: '3rem',
+              paddingRight: '3rem',
               position: isMobile ? 'fixed' : undefined,
               top: isMobile ? `${aiButtonTopMobile}px` : undefined,
               left: isMobile ? '50%' : undefined,
@@ -222,7 +249,7 @@ export default function Hero({ hoveredButton, setHoveredButton, scrollProgress, 
             }}
           >
             <GraffitiButton onClick={() => setModalOpen(true)} forceHover={aiAutoHover}>AI Powered</GraffitiButton>
-            <p className="font-zodiak text-white/50 text-sm text-center">
+            <p className="font-zodiak" style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.875rem', lineHeight: '1.25rem', textAlign: 'center' }}>
               We suggest.
             </p>
           </div>

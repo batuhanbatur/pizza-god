@@ -1,4 +1,4 @@
-import { BALLOONS } from '../pizza-bot/balloons'
+import { BALLOONS } from './balloons'
 import useIsMobile from '../../hooks/useIsMobile'
 
 function pickBalloon(text) {

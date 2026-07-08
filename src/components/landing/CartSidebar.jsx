@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useOrder } from '../../context/OrderContext'
-import { EXTRAS } from '../../data/menu'
+import { EXTRAS, MENU } from '../../data/menu'
 import { ALLERGEN_ICONS } from '../icons/AllergenIcons'
 import useIsMobile from '../../hooks/useIsMobile'
 import { supabase } from '../../lib/supabase'
@@ -155,6 +155,26 @@ export default function CartSidebar({ navVisible, isOpen, onOpen, onClose }) {
   const panelWidth = isMobile
     ? (view !== 'cart' ? '100vw' : MOBILE_DRAWER_WIDTH)
     : (view !== 'cart' ? '480px' : '220px')
+
+  // "+" on a discounted PotD line must never increment that line (it's capped at
+  // qty 1) — it routes through the exact same ADD_TO_CART payload shape as the
+  // menu's own Add to Cart, so it converges on the identical create-or-increment
+  // regular-line logic instead of a separate code path.
+  const addRegularLineForPotd = (item) => {
+    const pizza = MENU.classics.items.find(p => p.id === item.id)
+    dispatch({
+      type: 'ADD_TO_CART',
+      payload: {
+        id: item.id,
+        name: item.name,
+        price: pizza ? pizza.price : item.price,
+        dough: item.dough,
+        cheese: item.cheese,
+        extras: item.extras,
+        allergens: item.allergens,
+      },
+    })
+  }
 
   const handleCompleteOrder = async () => {
     setIsSubmitting(true)
@@ -319,7 +339,7 @@ export default function CartSidebar({ navVisible, isOpen, onOpen, onClose }) {
         right: 0,
         width: panelWidth,
         height: '100vh',
-        backgroundColor: view === 'complete' ? '#F2E0B6' : '#F7F2F6',
+        backgroundColor: '#F7F2F6',
         zIndex: isMobile ? 70 : 40,
         display: 'flex',
         flexDirection: 'column',
@@ -464,6 +484,13 @@ export default function CartSidebar({ navVisible, isOpen, onOpen, onClose }) {
                         {item.dough === 'gluten-free' ? 'GF Dough' : 'Regular'} · {item.cheese === 'vegan' ? 'Vegan' : 'Mozzarella'}
                       </div>
 
+                      {/* Full-price sibling of a discounted PotD line — only shown when both coexist */}
+                      {!item.isPotd && cartItems.some(other => other.id === item.id && other.isPotd) && (
+                        <div className="font-zodiak" style={{ fontSize: '0.7rem', color: '#999', fontStyle: 'italic', marginBottom: '0.25rem' }}>
+                          Full price — Pizza of the Day is one per customer.
+                        </div>
+                      )}
+
                       {/* Extras */}
                       {extrasEntries.length > 0 && (
                         <div style={{ marginBottom: '0.25rem' }}>
@@ -498,25 +525,17 @@ export default function CartSidebar({ navVisible, isOpen, onOpen, onClose }) {
                       {/* Quantity controls + remove */}
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                          {item.isPotd ? (
-                            <span className="font-zodiak" style={{ fontSize: '0.85rem', color: '#1a1a1a', minWidth: '1rem', textAlign: 'center' }}>
-                              {item.quantity}
-                            </span>
-                          ) : (
-                            <>
-                              <button
-                                onClick={() => updateQuantity(index, item.quantity - 1)}
-                                style={{ background: 'none', border: '1px solid #ccc', color: '#1a1a1a', width: '22px', height: '22px', borderRadius: '3px', cursor: 'pointer', fontSize: '0.85rem', lineHeight: 1 }}
-                              >−</button>
-                              <span className="font-zodiak" style={{ fontSize: '0.85rem', color: '#1a1a1a', minWidth: '1rem', textAlign: 'center' }}>
-                                {item.quantity}
-                              </span>
-                              <button
-                                onClick={() => updateQuantity(index, item.quantity + 1)}
-                                style={{ background: 'none', border: '1px solid #ccc', color: '#1a1a1a', width: '22px', height: '22px', borderRadius: '3px', cursor: 'pointer', fontSize: '0.85rem', lineHeight: 1 }}
-                              >+</button>
-                            </>
-                          )}
+                          <button
+                            onClick={() => updateQuantity(index, item.quantity - 1)}
+                            style={{ background: 'none', border: '1px solid #ccc', color: '#1a1a1a', width: '22px', height: '22px', borderRadius: '3px', cursor: 'pointer', fontSize: '0.85rem', lineHeight: 1 }}
+                          >−</button>
+                          <span className="font-zodiak" style={{ fontSize: '0.85rem', color: '#1a1a1a', minWidth: '1rem', textAlign: 'center' }}>
+                            {item.quantity}
+                          </span>
+                          <button
+                            onClick={() => item.isPotd ? addRegularLineForPotd(item) : updateQuantity(index, item.quantity + 1)}
+                            style={{ background: 'none', border: '1px solid #ccc', color: '#1a1a1a', width: '22px', height: '22px', borderRadius: '3px', cursor: 'pointer', fontSize: '0.85rem', lineHeight: 1 }}
+                          >+</button>
                         </div>
                         <button
                           onClick={() => removeItem(index)}
@@ -780,9 +799,9 @@ export default function CartSidebar({ navVisible, isOpen, onOpen, onClose }) {
                 <div style={{ width: '100%', textAlign: 'left' }}>
                   {lastOrder.items.map((item, index) => (
                     <div key={index}>
-                      <OrderSummaryLine item={item} mutedColor="#5a5a5a" />
+                      <OrderSummaryLine item={item} />
                       {index < lastOrder.items.length - 1 && (
-                        <div style={{ height: '1px', backgroundColor: '#d9c99a' }} />
+                        <div style={{ height: '1px', backgroundColor: '#e8e8e8' }} />
                       )}
                     </div>
                   ))}

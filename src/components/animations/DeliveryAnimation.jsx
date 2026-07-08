@@ -1,5 +1,7 @@
 import { motion } from "framer-motion"
 
+// Planned order-arrival animation (Phase 2 feature) — currently unmounted, do not delete.
+
 // Timeline (seconds):
 // 0.0–0.8  dot appears   0.8–1.2  descent   1.2–1.35 impact + flash
 // 1.35–2.2 crater draws  2.2–3.0  dust      3.0–3.6  box   3.6–4.5 message
@@ -7,8 +9,7 @@ import { motion } from "framer-motion"
 export default function DeliveryAnimation({ onComplete }) {
   return (
     <motion.div
-      className="fixed inset-0 z-[60] overflow-hidden"
-      style={{ backgroundColor: "#000000" }}
+      style={{ position: 'fixed', inset: 0, zIndex: 60, overflow: 'hidden', backgroundColor: "#000000" }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
@@ -20,8 +21,9 @@ export default function DeliveryAnimation({ onComplete }) {
 
       {/* ——— Scene 1–3: meteor (dot → descent → impact scale) ——— */}
       <motion.div
-        className="absolute rounded-full"
         style={{
+          position: 'absolute',
+          borderRadius: '9999px',
           left: "85%",
           top: "15%",
           width: 4,
@@ -45,8 +47,8 @@ export default function DeliveryAnimation({ onComplete }) {
       {[0, 1, 2].map(i => (
         <motion.div
           key={i}
-          className="absolute"
           style={{
+            position: 'absolute',
             left: `calc(85% - ${10 + i * 14}px)`,
             top: `calc(15% - ${16 + i * 22}px)`,
             width: 2,
@@ -65,14 +67,13 @@ export default function DeliveryAnimation({ onComplete }) {
 
       {/* ——— Scene 3: full-screen flash ——— */}
       <motion.div
-        className="absolute inset-0"
-        style={{ backgroundColor: "#F5F2E8" }}
+        style={{ position: 'absolute', inset: 0, backgroundColor: "#F5F2E8" }}
         animate={{ opacity: [0, 0, 1, 0] }}
         transition={{ duration: 1.5, times: [0, 0.8, 0.9, 1] }}
       />
 
       {/* ——— Scenes 4–7: crater, dust, box, message ——— */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
 
         {/* crater */}
         <svg width="300" height="120" viewBox="0 0 300 120" fill="none">
@@ -87,12 +88,12 @@ export default function DeliveryAnimation({ onComplete }) {
         </svg>
 
         {/* dust */}
-        <div className="absolute flex gap-10" style={{ marginTop: -90 }}>
+        <div style={{ position: 'absolute', display: 'flex', gap: '2.5rem', marginTop: -90 }}>
           {[0, 1, 2, 3].map(i => (
             <motion.div
               key={i}
-              className="rounded-full"
               style={{
+                borderRadius: '9999px',
                 width: 8 + (i % 2) * 5,
                 height: 8 + (i % 2) * 5,
                 border: "1.5px solid #F5F2E8",
@@ -106,8 +107,15 @@ export default function DeliveryAnimation({ onComplete }) {
 
         {/* pizza box */}
         <motion.div
-          className="absolute px-5 py-2 font-zodiak text-sm tracking-widest"
+          className="font-zodiak"
           style={{
+            position: 'absolute',
+            paddingLeft: '1.25rem',
+            paddingRight: '1.25rem',
+            paddingTop: '0.5rem',
+            paddingBottom: '0.5rem',
+            fontSize: '0.875rem',
+            letterSpacing: '0.1em',
             border: "2px solid #F5F2E8",
             color: "#F5F2E8",
             marginTop: 30,
@@ -121,8 +129,15 @@ export default function DeliveryAnimation({ onComplete }) {
 
         {/* message */}
         <motion.div
-          className="absolute font-zodiak text-center tracking-[0.3em] text-xl"
-          style={{ color: "#F5F2E8", marginTop: 200 }}
+          className="font-zodiak"
+          style={{
+            position: 'absolute',
+            textAlign: 'center',
+            letterSpacing: '0.3em',
+            fontSize: '1.25rem',
+            color: "#F5F2E8",
+            marginTop: 200,
+          }}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 3.6, duration: 0.9, ease: "easeOut" }}

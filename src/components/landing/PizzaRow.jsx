@@ -54,9 +54,7 @@ const FONT_MAP = {
 }
 
 export default function PizzaRow({ pizza, discountedPrice, isPotd = false, soldOut = false, onOrder }) {
-  const { order, dispatch } = useOrder()
-  const alreadyInCartAsPotd = discountedPrice !== undefined
-    && order.cartItems.some((item) => item.id === pizza.id && item.isPotd)
+  const { dispatch } = useOrder()
   const { reduceGraffiti } = useContext(AccessibilityContext)
   const isMobile = useIsMobile()
   const nameFont = FONT_MAP[pizza.id] || 'font-zodiak'
@@ -294,7 +292,7 @@ export default function PizzaRow({ pizza, discountedPrice, isPotd = false, soldO
           Total: ${total.toFixed(2)}
         </span>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.3rem' }}>
-          {!soldOut && !alreadyInCartAsPotd && !canAddToCart && (
+          {!soldOut && !canAddToCart && (
             <span className="font-zodiak" style={{ color: '#aaa', fontSize: '0.75rem' }}>
               Pick a dough and cheese first.
             </span>
@@ -302,10 +300,6 @@ export default function PizzaRow({ pizza, discountedPrice, isPotd = false, soldO
           {soldOut ? (
             <button disabled style={{ backgroundColor: '#ccc', color: '#888', border: 'none', padding: '0.6rem 1.5rem', borderRadius: '3px', cursor: 'not-allowed', fontWeight: 'bold', fontSize: '0.95rem' }}>
               Sold Out
-            </button>
-          ) : alreadyInCartAsPotd ? (
-            <button disabled style={{ backgroundColor: '#ccc', color: '#888', border: 'none', padding: '0.6rem 1.5rem', borderRadius: '3px', cursor: 'not-allowed', fontWeight: 'bold', fontSize: '0.95rem' }}>
-              In Cart
             </button>
           ) : (
             <button

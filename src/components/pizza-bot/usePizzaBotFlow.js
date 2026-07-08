@@ -1,5 +1,5 @@
 import { useReducer, useEffect } from 'react'
-import { pizzaBotReducer, initialState } from '../landing/pizzaBotReducer'
+import { pizzaBotReducer, initialState } from './pizzaBotReducer'
 import { BOT_LINES } from '../../data/pizzaBotScript'
 import { getRecommendation } from './api'
 

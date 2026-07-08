@@ -56,12 +56,9 @@ function orderReducer(state, action) {
         }
       }
 
-      // One per customer: today's PotD is already in the cart — block re-adding it entirely.
-      if (isTodaysPotd && existingPotdLine) {
-        return state
-      }
-
-      // Otherwise (not today's PotD): regular full-price line.
+      // Otherwise (not today's PotD, or today's PotD already has its one discounted
+      // line): regular full-price line. This is the fix for the vanishing-add bug —
+      // re-adding today's PotD used to silently no-op instead of adding a full-price copy.
       const existing = state.cartItems.find(
         (item) =>
           item.id === action.payload.id &&
@@ -100,10 +97,14 @@ function orderReducer(state, action) {
           cartItems: state.cartItems.filter((_, i) => i !== index),
         }
       }
+      // Invariant, regardless of which UI path calls this: a discounted PotD line's
+      // quantity can never exceed 1 — clamp rather than trust the caller.
+      const target = state.cartItems[index]
+      const clampedQuantity = target?.isPotd ? Math.min(quantity, 1) : quantity
       return {
         ...state,
         cartItems: state.cartItems.map((item, i) =>
-          i === index ? { ...item, quantity } : item
+          i === index ? { ...item, quantity: clampedQuantity } : item
         ),
       }
     }

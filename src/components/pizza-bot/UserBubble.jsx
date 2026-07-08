@@ -1,4 +1,4 @@
-import { BALLOONS } from '../pizza-bot/balloons'
+import { BALLOONS } from './balloons'
 
 function pickBalloon(text) {
   const len = (text || '').length
