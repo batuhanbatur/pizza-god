@@ -165,6 +165,7 @@ export default function CartSidebar({ navVisible, isOpen, onOpen, onClose }) {
       if (USE_MOCK) {
         id = generateMockOrderId()
       } else {
+        if (!supabase) throw new Error("Couldn't place order — try again.")
         const { data, error } = await supabase.rpc('place_order', {
           p_customer_name: address.name,
           p_street: address.street,
