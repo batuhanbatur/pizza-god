@@ -1,4 +1,5 @@
 import { BOT_LINES } from '../../../data/pizzaBotScript'
+import useIsMobile from '../../../hooks/useIsMobile'
 
 const inlineFooterLabelStyle = {
   fontSize: '1.4rem',
@@ -8,12 +9,27 @@ const inlineFooterLabelStyle = {
   whiteSpace: 'nowrap',
 }
 
+const mobileFooterLabelStyle = {
+  fontSize: '0.8rem',
+  letterSpacing: '0',
+  color: '#555',
+  textTransform: 'uppercase',
+}
+
 export default function AllergenChips({ allergens, dispatch, onConstraintsDone }) {
+  const isMobile = useIsMobile()
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.6rem' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem' }}>
-        <span className="font-zodiak" style={inlineFooterLabelStyle}>{BOT_LINES.constraints.footerLabel}</span>
-        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.4rem' }}>
+      <div style={{
+        display: 'flex',
+        flexDirection: isMobile ? 'column' : 'row',
+        alignItems: isMobile ? 'flex-start' : 'center',
+        justifyContent: 'center',
+        gap: isMobile ? '0.5rem' : '1rem',
+        width: isMobile ? '100%' : undefined,
+      }}>
+        <span className="font-zodiak" style={isMobile ? mobileFooterLabelStyle : inlineFooterLabelStyle}>{BOT_LINES.constraints.footerLabel}</span>
+        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: isMobile ? 'flex-start' : 'center', gap: '0.4rem' }}>
         {BOT_LINES.constraints.chips.map(allergen => {
           const selected = allergens.includes(allergen)
           return (

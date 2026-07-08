@@ -1,4 +1,5 @@
 import { BALLOONS } from '../pizza-bot/balloons'
+import useIsMobile from '../../hooks/useIsMobile'
 
 function pickBalloon(text) {
   const len = (text || '').length
@@ -9,20 +10,23 @@ function pickBalloon(text) {
 
 export default function PizzaBotBubble({ text, avatar }) {
   const balloon = pickBalloon(text)
+  const isMobile = useIsMobile()
+  const avatarSize = 125
+  const backdropSize = 110
 
   return (
     <div style={{
       display: 'flex',
       alignItems: 'flex-start',
-      gap: '12px',
+      gap: isMobile ? '6px' : '12px',
       marginBottom: '1.25rem',
     }}>
       {/* Avatar with circle backdrop */}
-      <div style={{ position: 'relative', width: 125, height: 125, flexShrink: 0 }}>
+      <div style={{ position: 'relative', width: avatarSize, height: avatarSize, flexShrink: 0 }}>
         <div style={{
           position: 'absolute',
-          width: 110,
-          height: 110,
+          width: backdropSize,
+          height: backdropSize,
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
@@ -34,8 +38,8 @@ export default function PizzaBotBubble({ text, avatar }) {
           alt="PizzaBot"
           style={{
             position: 'relative',
-            width: 125,
-            height: 125,
+            width: avatarSize,
+            height: avatarSize,
             borderRadius: '50%',
             objectFit: 'cover',
           }}

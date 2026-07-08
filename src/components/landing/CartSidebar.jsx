@@ -1,8 +1,24 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useOrder } from '../../context/OrderContext'
 import { EXTRAS } from '../../data/menu'
 import { ALLERGEN_ICONS } from '../icons/AllergenIcons'
 import useIsMobile from '../../hooks/useIsMobile'
+import { supabase } from '../../lib/supabase'
+
+// Cheap dev fallback so the checkout flow works without real Supabase env vars
+// configured locally — never true in a production build.
+const USE_MOCK = import.meta.env.DEV
+  && (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY)
+
+const LAST_ORDER_STORAGE_KEY = 'pizzagod:lastOrder'
+
+function generateMockOrderId() {
+  return `mock-${Date.now()}`
+}
+
+function buildOrderReceipt(id, items, total, name) {
+  return { id, items, total, name, timestamp: Date.now() }
+}
 
 function AllergenIconRow({ allergens }) {
   const [hovered, setHovered] = useState(false)
@@ -39,7 +55,7 @@ function AllergenIconRow({ allergens }) {
   )
 }
 
-function OrderSummaryLine({ item }) {
+function OrderSummaryLine({ item, mutedColor = '#888' }) {
   const extrasEntries = Object.entries(item.extras || {})
   const extrasPrice = extrasEntries.reduce((s, [id, qty]) => {
     const extra = EXTRAS.find(e => e.id === id)
@@ -67,11 +83,11 @@ function OrderSummaryLine({ item }) {
           ${itemTotal.toFixed(2)}
         </span>
       </div>
-      <div className="font-zodiak" style={{ fontSize: '0.75rem', color: '#888', marginBottom: '0.15rem' }}>
+      <div className="font-zodiak" style={{ fontSize: '0.75rem', color: mutedColor, marginBottom: '0.15rem' }}>
         {configParts.join(' · ')}
       </div>
       <AllergenIconRow allergens={item.allergens} />
-      <div className="font-zodiak" style={{ fontSize: '0.75rem', color: '#888' }}>
+      <div className="font-zodiak" style={{ fontSize: '0.75rem', color: mutedColor }}>
         × {item.quantity}
       </div>
     </div>
@@ -93,13 +109,28 @@ const MOBILE_PILL_GAP_PX = 8
 const MOBILE_PILL_TOP_PX = MOBILE_CART_BUTTON_OFFSET_PX + MOBILE_CART_BUTTON_SIZE_PX + MOBILE_PILL_GAP_PX
 
 export default function CartSidebar({ navVisible, isOpen, onOpen, onClose }) {
-  const { order, removeItem, updateQuantity, updateItemExtraQuantity, completeOrder } = useOrder()
+  const { order, dispatch, removeItem, updateQuantity, updateItemExtraQuantity, completeOrder } = useOrder()
   const { cartItems } = order
   const isMobile = useIsMobile()
 
-  const [checkoutMode, setCheckoutMode] = useState(false)
+  // view: 'cart' | 'checkout' | 'complete'
+  const [view, setView] = useState('cart')
   const [address, setAddress] = useState({ name: '', street: '', city: '', zip: '' })
   const [paymentMethod, setPaymentMethod] = useState('cash')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState(null)
+  const [lastOrder, setLastOrder] = useState(null)
+  const [storedLastOrder, setStoredLastOrder] = useState(null)
+
+  useEffect(() => {
+    const raw = localStorage.getItem(LAST_ORDER_STORAGE_KEY)
+    if (!raw) return
+    try {
+      setStoredLastOrder(JSON.parse(raw))
+    } catch {
+      localStorage.removeItem(LAST_ORDER_STORAGE_KEY)
+    }
+  }, [])
 
   const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0)
   const cartTotal = cartItems.reduce((sum, item) => {
@@ -110,7 +141,10 @@ export default function CartSidebar({ navVisible, isOpen, onOpen, onClose }) {
     return sum + (item.price + extrasPrice) * item.quantity
   }, 0)
 
-  const showFull = navVisible && cartCount > 0
+  // view !== 'cart' keeps the desktop panel visible through checkout/complete even
+  // after CLEAR_CART empties the cart mid-flow (cartCount alone would hide it the
+  // instant the order completes, before the user ever sees the confirmation).
+  const showFull = navVisible && (cartCount > 0 || view !== 'cart')
   const showPill = !navVisible && cartCount > 0
 
   // Unlike the desktop panel (which hides entirely when empty via showFull), the
@@ -119,8 +153,51 @@ export default function CartSidebar({ navVisible, isOpen, onOpen, onClose }) {
   const mobileCartButtonVisible = navVisible
 
   const panelWidth = isMobile
-    ? (checkoutMode ? '100vw' : MOBILE_DRAWER_WIDTH)
-    : (checkoutMode ? '480px' : '220px')
+    ? (view !== 'cart' ? '100vw' : MOBILE_DRAWER_WIDTH)
+    : (view !== 'cart' ? '480px' : '220px')
+
+  const handleCompleteOrder = async () => {
+    setIsSubmitting(true)
+    setSubmitError(null)
+
+    try {
+      let id
+      if (USE_MOCK) {
+        id = generateMockOrderId()
+      } else {
+        const { data, error } = await supabase.rpc('place_order', {
+          p_customer_name: address.name,
+          p_street: address.street,
+          p_city: address.city,
+          p_zip: address.zip,
+          p_payment_method: paymentMethod,
+          p_items: cartItems,
+          p_total: cartTotal,
+        })
+        if (error) throw error
+        id = data
+      }
+
+      const receipt = buildOrderReceipt(id, cartItems, cartTotal, address.name)
+      setLastOrder(receipt)
+      setStoredLastOrder(receipt)
+      localStorage.setItem(LAST_ORDER_STORAGE_KEY, JSON.stringify(receipt))
+      completeOrder() // POTD decrement — must run before CLEAR_CART while cartItems still holds the order
+      dispatch({ type: 'CLEAR_CART' })
+      setView('complete')
+    } catch (err) {
+      setSubmitError(err.message || 'Something went wrong placing your order. Please try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  // X / backdrop must not leave a stale 'complete' view behind for next time the
+  // drawer opens — 'Got it' (labeled "Done" below) already resets view itself.
+  const handleClose = () => {
+    if (view === 'complete') setView('cart')
+    onClose()
+  }
 
   const inputStyle = {
     fontFamily: 'inherit',
@@ -194,13 +271,34 @@ export default function CartSidebar({ navVisible, isOpen, onOpen, onClose }) {
             <circle cx="20" cy="21" r="1" />
             <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
           </svg>
+          {cartCount > 0 && (
+            <span style={{
+              position: 'absolute',
+              bottom: '-2px',
+              left: '-2px',
+              backgroundColor: '#39FF14',
+              color: '#000',
+              fontSize: '0.65rem',
+              fontWeight: 'bold',
+              borderRadius: '999px',
+              minWidth: '16px',
+              height: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '0 4px',
+              lineHeight: 1,
+            }}>
+              {cartCount}
+            </span>
+          )}
         </button>
       )}
 
       {/* Backdrop — mobile drawer only */}
       {isMobile && (
         <div
-          onClick={onClose}
+          onClick={handleClose}
           style={{
             position: 'fixed',
             inset: 0,
@@ -220,7 +318,7 @@ export default function CartSidebar({ navVisible, isOpen, onOpen, onClose }) {
         right: 0,
         width: panelWidth,
         height: '100vh',
-        backgroundColor: '#F7F2F6',
+        backgroundColor: view === 'complete' ? '#F2E0B6' : '#F7F2F6',
         zIndex: isMobile ? 70 : 40,
         display: 'flex',
         flexDirection: 'column',
@@ -241,7 +339,7 @@ export default function CartSidebar({ navVisible, isOpen, onOpen, onClose }) {
         {/* Close button — mobile drawer only, top-left (mirrored from menu drawer's top-right) */}
         {isMobile && (
           <button
-            onClick={onClose}
+            onClick={handleClose}
             aria-label="Close cart"
             style={{
               position: 'absolute',
@@ -263,7 +361,7 @@ export default function CartSidebar({ navVisible, isOpen, onOpen, onClose }) {
           </button>
         )}
 
-        {!checkoutMode ? (
+        {view === 'cart' ? (
           <>
             {/* Header */}
             <div style={{ marginBottom: '0.75rem', paddingLeft: isMobile ? '28px' : 0 }}>
@@ -286,7 +384,9 @@ export default function CartSidebar({ navVisible, isOpen, onOpen, onClose }) {
             </div>
 
             {cartItems.length === 0 ? (
-              /* Empty state */
+              /* Empty state — mobile only; desktop just fades the whole panel out via
+                 showFull, so rendering this here would flash for a frame first. */
+              isMobile && (
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem', textAlign: 'center', padding: '0 1rem' }}>
                 <span className="font-zodiak" style={{ fontSize: '0.9rem', color: '#888' }}>
                   Your Cart is Empty
@@ -311,7 +411,28 @@ export default function CartSidebar({ navVisible, isOpen, onOpen, onClose }) {
                 >
                   Check out our pizzas
                 </button>
+                {storedLastOrder && (
+                  <button
+                    onClick={() => {
+                      if (!lastOrder) setLastOrder(storedLastOrder)
+                      setView('complete')
+                    }}
+                    className="font-zodiak"
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      padding: 0,
+                      cursor: 'pointer',
+                      color: '#555',
+                      fontSize: '0.75rem',
+                      textDecoration: 'underline',
+                    }}
+                  >
+                    Your last order: #{storedLastOrder.id} — ${storedLastOrder.total.toFixed(2)}
+                  </button>
+                )}
               </div>
+              )
             ) : (
               <>
             {/* Scrollable item list */}
@@ -421,7 +542,7 @@ export default function CartSidebar({ navVisible, isOpen, onOpen, onClose }) {
                 </span>
               </div>
               <button
-                onClick={() => setCheckoutMode(true)}
+                onClick={() => setView('checkout')}
                 className="font-zodiak"
                 style={{
                   width: '100%',
@@ -439,10 +560,35 @@ export default function CartSidebar({ navVisible, isOpen, onOpen, onClose }) {
                 Checkout →
               </button>
             </div>
+
+            {/* Last-order receipt hint — desktop's only path to it, since desktop
+                never renders the empty state (see above). */}
+            {storedLastOrder && (
+              <button
+                onClick={() => {
+                  if (!lastOrder) setLastOrder(storedLastOrder)
+                  setView('complete')
+                }}
+                className="font-zodiak"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  padding: 0,
+                  marginTop: '0.75rem',
+                  cursor: 'pointer',
+                  color: '#888',
+                  fontSize: '0.7rem',
+                  textDecoration: 'underline',
+                  alignSelf: 'flex-start',
+                }}
+              >
+                Last order: #{storedLastOrder.id} — ${storedLastOrder.total.toFixed(2)}
+              </button>
+            )}
               </>
             )}
           </>
-        ) : (
+        ) : view === 'checkout' ? (
           <>
             {/* Checkout header */}
             <div style={{ marginBottom: '0.75rem', paddingLeft: isMobile ? '28px' : 0 }}>
@@ -451,7 +597,7 @@ export default function CartSidebar({ navVisible, isOpen, onOpen, onClose }) {
                   Checkout
                 </span>
                 <button
-                  onClick={() => setCheckoutMode(false)}
+                  onClick={() => setView('cart')}
                   className="font-zodiak"
                   style={{ background: 'none', border: 'none', color: '#933C3C', fontSize: '0.8rem', cursor: 'pointer', padding: 0, fontFamily: 'inherit' }}
                 >
@@ -570,34 +716,103 @@ export default function CartSidebar({ navVisible, isOpen, onOpen, onClose }) {
             {/* Complete Order */}
             {(() => {
               const formComplete = Object.values(address).every(v => v.trim() !== '')
+              const canSubmit = formComplete && !isSubmitting
               return (
                 <div style={{ borderTop: '1px solid #ddd', paddingTop: '1rem', marginTop: '0.5rem' }}>
+                  {submitError && (
+                    <div className="font-zodiak" style={{ color: '#933C3C', fontSize: '0.8rem', marginBottom: '0.5rem' }}>
+                      {submitError}
+                    </div>
+                  )}
                   <button
-                    onClick={() => {
-                      completeOrder()
-                      console.log('order complete', { cart: cartItems, address, paymentMethod })
-                    }}
-                    disabled={!formComplete}
+                    onClick={handleCompleteOrder}
+                    disabled={!canSubmit}
                     className="font-zodiak"
                     style={{
-                      backgroundColor: formComplete ? '#39FF14' : '#ccc',
+                      backgroundColor: canSubmit ? '#39FF14' : '#ccc',
                       color: '#000',
                       border: 'none',
                       padding: '0.8rem',
                       width: '100%',
                       borderRadius: '3px',
-                      cursor: formComplete ? 'pointer' : 'not-allowed',
+                      cursor: canSubmit ? 'pointer' : 'not-allowed',
                       fontWeight: 'bold',
                       fontSize: '1rem',
                       fontFamily: 'inherit',
                     }}
                   >
-                    Complete Order
+                    {isSubmitting ? 'Placing Order…' : 'Complete Order'}
                   </button>
                 </div>
               )
             })()}
           </>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, textAlign: 'center', paddingLeft: isMobile ? '28px' : 0, overflowY: 'auto' }}>
+            {/* margin: 'auto 0' centers this group vertically as one block when it fits,
+                and degrades to top-anchored scrolling (not bottom-pinned) when it doesn't —
+                justifyContent:'center' on the scroll container itself would make an
+                overflowing group unreachable at the top instead. */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', width: '100%', margin: 'auto 0' }}>
+              {/* Reserved for a future animation — fixed dimensions now so later content can't shift this layout */}
+              <div style={{
+                width: isMobile ? 'min(350px, 85vw)' : '350px',
+                height: isMobile ? 'min(350px, 85vw)' : '350px',
+                border: 'none',
+                backgroundColor: 'transparent',
+                flexShrink: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                <img src="/pizza-of-the-day-clock.svg" alt="" style={{ width: '120px', height: 'auto', pointerEvents: 'none' }} />
+              </div>
+
+              <span className="font-zodiak" style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#1a1a1a' }}>
+                Order #{lastOrder?.id}
+              </span>
+              <span className="font-zodiak" style={{ fontSize: '0.85rem', color: '#555' }}>
+                Thanks{lastOrder?.name ? `, ${lastOrder.name}` : ''}! Your order total was ${lastOrder ? lastOrder.total.toFixed(2) : '0.00'}.
+              </span>
+
+              {lastOrder?.items?.length > 0 && (
+                <div style={{ width: '100%', textAlign: 'left' }}>
+                  {lastOrder.items.map((item, index) => (
+                    <div key={index}>
+                      <OrderSummaryLine item={item} mutedColor="#5a5a5a" />
+                      {index < lastOrder.items.length - 1 && (
+                        <div style={{ height: '1px', backgroundColor: '#d9c99a' }} />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <button
+                onClick={() => {
+                  setAddress({ name: '', street: '', city: '', zip: '' })
+                  setPaymentMethod('cash')
+                  setLastOrder(null)
+                  setView('cart')
+                  onClose()
+                }}
+                className="font-zodiak"
+                style={{
+                  backgroundColor: '#39FF14',
+                  color: '#000',
+                  fontWeight: 'bold',
+                  padding: '0.6rem 1.2rem',
+                  borderRadius: '3px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '0.85rem',
+                  letterSpacing: '0.05em',
+                }}
+              >
+                Got it
+              </button>
+            </div>
+          </div>
         )}
 
       </div>

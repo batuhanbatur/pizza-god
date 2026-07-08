@@ -61,8 +61,8 @@ export default function PizzaRow({ pizza, discountedPrice, isPotd = false, soldO
   const isMobile = useIsMobile()
   const nameFont = FONT_MAP[pizza.id] || 'font-zodiak'
 
-  const [dough, setDough] = useState('regular')
-  const [cheese, setCheese] = useState('mozzarella')
+  const [dough, setDough] = useState(null)
+  const [cheese, setCheese] = useState(null)
   const [selectedExtras, setSelectedExtras] = useState({})
   const [extrasOpen, setExtrasOpen] = useState(false)
 
@@ -86,13 +86,16 @@ export default function PizzaRow({ pizza, discountedPrice, isPotd = false, soldO
   }, 0)
   const total = effectivePrice + extrasTotal
 
+  const canAddToCart = dough !== null && cheese !== null
+
   const handleAddToCart = () => {
+    if (!canAddToCart) return
     dispatch({
       type: 'ADD_TO_CART',
       payload: { id: pizza.id, name: pizza.name, price: pizza.price, dough, cheese, extras: selectedExtras, allergens: visibleAllergens },
     })
-    setDough('regular')
-    setCheese('mozzarella')
+    setDough(null)
+    setCheese(null)
     setSelectedExtras({})
     onOrder?.()
   }
@@ -101,7 +104,13 @@ export default function PizzaRow({ pizza, discountedPrice, isPotd = false, soldO
     <div style={{ paddingTop: '2.5rem', paddingBottom: '2.5rem' }}>
 
       {/* Name + price */}
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: '1.5rem', marginBottom: '0.3rem', flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
+      <div style={{
+        display: 'flex',
+        flexDirection: isMobile ? 'column' : 'row',
+        alignItems: isMobile ? 'flex-start' : 'baseline',
+        gap: isMobile ? '0.2rem' : '1.5rem',
+        marginBottom: '0.3rem',
+      }}>
         <span className={nameFont} style={{ fontSize: '1.8rem', fontWeight: '900', letterSpacing: '0.1em', color: '#1a1a1a', textTransform: 'uppercase' }}>
           {pizza.name}
         </span>
@@ -284,32 +293,49 @@ export default function PizzaRow({ pizza, discountedPrice, isPotd = false, soldO
         <span className="font-zodiak" style={{ color: '#1a1a1a', fontSize: '1rem' }}>
           Total: ${total.toFixed(2)}
         </span>
-        {soldOut ? (
-          <button disabled style={{ backgroundColor: '#ccc', color: '#888', border: 'none', padding: '0.6rem 1.5rem', borderRadius: '3px', cursor: 'not-allowed', fontWeight: 'bold', fontSize: '0.95rem' }}>
-            Sold Out
-          </button>
-        ) : alreadyInCartAsPotd ? (
-          <button disabled style={{ backgroundColor: '#ccc', color: '#888', border: 'none', padding: '0.6rem 1.5rem', borderRadius: '3px', cursor: 'not-allowed', fontWeight: 'bold', fontSize: '0.95rem' }}>
-            In Cart
-          </button>
-        ) : (
-          <button
-            onClick={handleAddToCart}
-            className="font-zodiak"
-            style={{
-              backgroundColor: '#39FF14',
-              color: '#000',
-              border: 'none',
-              padding: '0.6rem 1.5rem',
-              borderRadius: '3px',
-              cursor: 'pointer',
-              fontWeight: 'bold',
-              fontSize: '0.95rem',
-            }}
-          >
-            Add to Cart
-          </button>
-        )}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.3rem' }}>
+          {!soldOut && !alreadyInCartAsPotd && !canAddToCart && (
+            <span className="font-zodiak" style={{ color: '#aaa', fontSize: '0.75rem' }}>
+              Pick a dough and cheese first.
+            </span>
+          )}
+          {soldOut ? (
+            <button disabled style={{ backgroundColor: '#ccc', color: '#888', border: 'none', padding: '0.6rem 1.5rem', borderRadius: '3px', cursor: 'not-allowed', fontWeight: 'bold', fontSize: '0.95rem' }}>
+              Sold Out
+            </button>
+          ) : alreadyInCartAsPotd ? (
+            <button disabled style={{ backgroundColor: '#ccc', color: '#888', border: 'none', padding: '0.6rem 1.5rem', borderRadius: '3px', cursor: 'not-allowed', fontWeight: 'bold', fontSize: '0.95rem' }}>
+              In Cart
+            </button>
+          ) : (
+            <button
+              onClick={handleAddToCart}
+              disabled={!canAddToCart}
+              className="font-zodiak"
+              style={canAddToCart ? {
+                backgroundColor: '#39FF14',
+                color: '#000',
+                border: 'none',
+                padding: '0.6rem 1.5rem',
+                borderRadius: '3px',
+                cursor: 'pointer',
+                fontWeight: 'bold',
+                fontSize: '0.95rem',
+              } : {
+                backgroundColor: '#ccc',
+                color: '#888',
+                border: 'none',
+                padding: '0.6rem 1.5rem',
+                borderRadius: '3px',
+                cursor: 'not-allowed',
+                fontWeight: 'bold',
+                fontSize: '0.95rem',
+              }}
+            >
+              Add to Cart
+            </button>
+          )}
+        </div>
       </div>
     </div>
   )

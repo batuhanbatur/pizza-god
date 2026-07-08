@@ -1,4 +1,5 @@
 import { BOT_LINES } from '../../../data/pizzaBotScript'
+import useIsMobile from '../../../hooks/useIsMobile'
 
 const inlineFooterLabelStyle = {
   fontSize: '1.4rem',
@@ -6,6 +7,13 @@ const inlineFooterLabelStyle = {
   color: '#555',
   textTransform: 'uppercase',
   whiteSpace: 'nowrap',
+}
+
+const mobileFooterLabelStyle = {
+  fontSize: '0.8rem',
+  letterSpacing: '0',
+  color: '#555',
+  textTransform: 'uppercase',
 }
 
 const chipBtn = {
@@ -18,6 +26,7 @@ const chipBtn = {
 }
 
 export default function PartySizeChips({ stepper, dispatch, onPartySizeChip }) {
+  const isMobile = useIsMobile()
   const submitStepper = () => {
     const n = stepper
     const chatLabel = n === 4
@@ -27,9 +36,15 @@ export default function PartySizeChips({ stepper, dispatch, onPartySizeChip }) {
   }
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem' }}>
-      <span className="font-zodiak" style={inlineFooterLabelStyle}>{BOT_LINES.party_size.footerLabel}</span>
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.6rem' }}>
+    <div style={{
+      display: 'flex',
+      flexDirection: isMobile ? 'column' : 'row',
+      justifyContent: 'center',
+      alignItems: isMobile ? 'flex-start' : 'center',
+      gap: isMobile ? '0.5rem' : '1rem',
+    }}>
+      <span className="font-zodiak" style={isMobile ? mobileFooterLabelStyle : inlineFooterLabelStyle}>{BOT_LINES.party_size.footerLabel}</span>
+      <div style={{ display: 'flex', flexWrap: isMobile ? 'wrap' : 'nowrap', justifyContent: isMobile ? 'flex-start' : 'center', alignItems: 'center', gap: '0.6rem' }}>
       {BOT_LINES.party_size.chips.slice(0, 3).map(chip => (
         <button
           key={chip.value}

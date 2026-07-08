@@ -9,20 +9,24 @@ import AllergenChips from '../pizza-bot/steps/AllergenChips'
 import VibeChips from '../pizza-bot/steps/VibeChips'
 import PizzaBotBubble from './PizzaBotBubble'
 import UserBubble from './UserBubble'
+import useIsMobile from '../../hooks/useIsMobile'
 
 // Three staggered dots inside a small balloon
 function TypingIndicator({ avatar }) {
+  const isMobile = useIsMobile()
+  const avatarSize = 125
+  const backdropSize = 110
   return (
-    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '1.25rem' }}>
-      <div style={{ position: 'relative', width: 125, height: 125, flexShrink: 0 }}>
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: isMobile ? '6px' : '12px', marginBottom: '1.25rem' }}>
+      <div style={{ position: 'relative', width: avatarSize, height: avatarSize, flexShrink: 0 }}>
         <div style={{
-          position: 'absolute', width: 110, height: 110,
+          position: 'absolute', width: backdropSize, height: backdropSize,
           top: '50%', left: '50%',
           transform: 'translate(-50%,-50%)',
           borderRadius: '50%',
           backgroundColor: '#F2E0B6',
         }} />
-        <img src={avatar} alt="" style={{ position: 'relative', width: 125, height: 125, borderRadius: '50%', objectFit: 'cover' }} />
+        <img src={avatar} alt="" style={{ position: 'relative', width: avatarSize, height: avatarSize, borderRadius: '50%', objectFit: 'cover' }} />
       </div>
       <div style={{ position: 'relative', width: 'fit-content' }}>
         <svg
@@ -56,6 +60,7 @@ export default function PizzaBotModal({ isOpen, onClose, onComplete }) {
   const { state, dispatch, handlers, AVATAR } = usePizzaBotFlow(isOpen)
   const { dispatch: orderDispatch } = useOrder()
   const bottomRef = useRef(null)
+  const isMobile = useIsMobile()
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -72,6 +77,9 @@ export default function PizzaBotModal({ isOpen, onClose, onComplete }) {
           name: rec.pizza.name,
           price: rec.pizza.price,
           quantity: rec.quantity,
+          // Per the api/pizzabot.js prompt contract, the LLM omits a modifications
+          // key entirely when it means regular dough / mozzarella — these fallbacks
+          // decode that contract, they are not guesses at a missing value.
           dough: rec.modifications.dough || 'regular',
           cheese: rec.modifications.cheese || 'mozzarella',
           extras: {},
@@ -95,12 +103,12 @@ export default function PizzaBotModal({ isOpen, onClose, onComplete }) {
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
     >
       <div style={{
-        backgroundColor: '#fff',
-        width: '1000px',
-        maxWidth: '95vw',
-        height: '700px',
-        maxHeight: '90vh',
-        borderRadius: '4px',
+        backgroundColor: '#F2E0B6',
+        width: isMobile ? '100vw' : '1000px',
+        maxWidth: isMobile ? '100vw' : '95vw',
+        height: isMobile ? '100dvh' : '700px',
+        maxHeight: isMobile ? '100dvh' : '90vh',
+        borderRadius: isMobile ? 0 : '4px',
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
@@ -116,8 +124,19 @@ export default function PizzaBotModal({ isOpen, onClose, onComplete }) {
           }}
         >×</button>
 
-        {/* MESSAGES AREA: plain chronological transcript, scrolls to bottom on new message */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '1.25rem 1.5rem 1rem' }}>
+        {/* MESSAGES AREA: plain chronological transcript, scrolls to bottom on new message.
+            backgroundColor set explicitly (not inherited from the shell) — a scroll
+            container with no paint of its own can flash the browser's default white
+            canvas during mobile Safari's rubber-band overscroll. */}
+        <div style={{
+          flex: 1,
+          overflowY: 'auto',
+          backgroundColor: '#F2E0B6',
+          paddingTop: isMobile ? '20px' : '1.25rem',
+          paddingBottom: isMobile ? '20px' : '1rem',
+          paddingRight: isMobile ? '20px' : '1.5rem',
+          paddingLeft: isMobile ? '10px' : '1.5rem',
+        }}>
           {state.messages.map((msg, i) => (
             <div key={i}>
               {msg.role === 'bot'
@@ -145,9 +164,9 @@ export default function PizzaBotModal({ isOpen, onClose, onComplete }) {
         {/* Footer — fixed minHeight keeps layout stable across steps */}
         <div style={{
           minHeight: 140,
-          padding: '1rem 1.5rem',
-          borderTop: '1px solid #eee',
-          backgroundColor: '#fafafa',
+          padding: isMobile ? '20px' : '1rem 1.5rem',
+          borderTop: '1px solid #C2A572',
+          backgroundColor: '#E8D7A3',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
