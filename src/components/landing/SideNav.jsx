@@ -9,6 +9,12 @@ const links = [
   { label: 'ABOUT US', id: 'about-us' },
 ]
 
+// goToSection scrolls to each section's heading, not its (padded) root div — see anchorIds.
+const anchorIds = {
+  'pizza-of-the-day': 'pizza-of-the-day-anchor',
+  'about-us': 'about-us-anchor',
+}
+
 // Mobile hamburger + drawer sizing.
 const MOBILE_HAMBURGER_SIZE_PX = 44
 const MOBILE_HAMBURGER_OFFSET_PX = 16
@@ -49,7 +55,7 @@ export default function SideNav({ navVisible, isOpen, onOpen, onClose }) {
   }, [])
 
   const goToSection = (id) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
+    document.getElementById(anchorIds[id] ?? id)?.scrollIntoView({ behavior: 'smooth' })
   }
 
   const renderLinks = (onLinkClick) => (

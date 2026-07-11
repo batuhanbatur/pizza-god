@@ -32,7 +32,7 @@ function OptionButton({ label, selected, onClick }) {
         background: strong ? '#1a1a1a' : 'none',
         border: reduceGraffiti
           ? `2px solid ${strong ? '#1a1a1a' : '#ccc'}`
-          : `1px solid ${selected ? '#1a1a1a' : '#ccc'}`,
+          : `1px solid ${selected ? '#1a1a1a' : '#555'}`,
         color: strong ? '#F5F2E8' : (selected ? '#1a1a1a' : '#888'),
         fontWeight: selected ? 'bold' : 'normal',
         padding: '0.3rem 0.8rem',

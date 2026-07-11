@@ -24,13 +24,16 @@ export default function PizzaOfTheDaySection({ visible }) {
         transition: 'opacity 0.4s',
       }}
     >
-      <div style={{
-        display: 'flex',
-        flexDirection: isMobile ? 'column' : 'row',
-        alignItems: 'center',
-        gap: isMobile ? '0.5rem' : '1rem',
-        marginBottom: isMobile ? '1.25rem' : '3rem',
-      }}>
+      <div
+        id="pizza-of-the-day-anchor"
+        style={{
+          display: 'flex',
+          flexDirection: isMobile ? 'column' : 'row',
+          alignItems: 'center',
+          gap: isMobile ? '0.5rem' : '1rem',
+          marginBottom: isMobile ? '1.25rem' : '3rem',
+          scrollMarginTop: '24px',
+        }}>
         <img
           src="/pizza-of-the-day-clock.svg"
           alt=""

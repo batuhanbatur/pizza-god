@@ -34,6 +34,7 @@ export default function AboutSection({ visible }) {
         const textBlock = (
           <div key="text" style={{ display: 'flex', flexDirection: 'column', gap: '2rem', paddingTop: isMobile ? 0 : '1rem' }}>
             <h2
+              id="about-us-anchor"
               className="font-zodiak"
               style={{
                 fontSize: '2.75rem',
@@ -41,6 +42,7 @@ export default function AboutSection({ visible }) {
                 letterSpacing: '0',
                 color: '#1a1a1a',
                 margin: 0,
+                scrollMarginTop: '24px',
               }}
             >
               About Us

@@ -27,7 +27,7 @@ export default function PizzaSection({ visible }) {
         transition: 'opacity 0.4s',
       }}
     >
-      <div style={{ position: 'relative', textAlign: 'center', marginBottom: '3rem' }}>
+      <div id="pizzas-anchor" style={{ position: 'relative', textAlign: 'center', marginBottom: '3rem', scrollMarginTop: '24px' }}>
         {!reduceGraffiti && (
           <NeonBurst style={{
             position: 'absolute',
