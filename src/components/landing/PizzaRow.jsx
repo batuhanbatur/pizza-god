@@ -1,6 +1,6 @@
-import { useState, useContext } from 'react'
+import { useState, useContext, useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { DOUGH_OPTIONS, CHEESE_OPTIONS, EXTRAS } from '../../data/menu'
+import { DOUGH_OPTIONS, CHEESE_OPTIONS, EXTRAS, OPTION_REMOVES } from '../../data/menu'
 import { useOrder } from '../../context/OrderContext'
 import AllergenBadge from '../ui/AllergenBadge'
 import { AccessibilityContext } from '../../context/AccessibilityContext'
@@ -63,20 +63,49 @@ export default function PizzaRow({ pizza, discountedPrice, isPotd = false, soldO
   const [cheese, setCheese] = useState(null)
   const [selectedExtras, setSelectedExtras] = useState({})
   const [extrasOpen, setExtrasOpen] = useState(false)
+  const [openAllergen, setOpenAllergen] = useState(null)
+  const allergensRowRef = useRef(null)
 
   const effectivePrice = discountedPrice ?? pizza.price
 
-  const extraAllergens = Object.keys(selectedExtras)
-    .flatMap(id => EXTRAS.find(e => e.id === id)?.allergens || [])
+  const selectedExtraItems = Object.keys(selectedExtras)
+    .map(id => EXTRAS.find(e => e.id === id))
+    .filter(Boolean)
 
-  const visibleAllergens = [...new Set([
-    ...pizza.allergens.filter(a => {
-      if (a === 'Gluten' && dough === 'gluten-free') return false
-      if (a === 'Milk' && cheese === 'vegan') return false
-      return true
-    }),
-    ...extraAllergens,
-  ])]
+  const extraAllergens = selectedExtraItems.flatMap(e => e.allergens || [])
+
+  const removedByBuild = [...(OPTION_REMOVES[dough] || []), ...(OPTION_REMOVES[cheese] || [])]
+  const filteredPizzaAllergens = pizza.allergens.filter(a => !removedByBuild.includes(a))
+
+  const visibleAllergens = [...new Set([...filteredPizzaAllergens, ...extraAllergens])]
+
+  // Display-only: every source string behind each visible allergen, for the badge
+  // tooltip. Pulls only from contributors that actually survived filtering above
+  // (a swapped-out pizza allergen doesn't get to keep contributing its source),
+  // pizza first then selected extras in order, deduped and joined with ", ".
+  const allergenSources = Object.fromEntries(
+    visibleAllergens.map(a => {
+      const sources = [
+        ...(filteredPizzaAllergens.includes(a) && pizza.allergenSources?.[a] ? [pizza.allergenSources[a]] : []),
+        ...selectedExtraItems
+          .filter(e => e.allergens?.includes(a) && e.allergenSources?.[a])
+          .map(e => e.allergenSources[a]),
+      ]
+      return [a, [...new Set(sources)].join(', ') || undefined]
+    })
+  )
+
+  // Tap-outside dismiss for mobile allergen tooltips — one open at a time per card.
+  useEffect(() => {
+    if (!isMobile || openAllergen === null) return
+    const handleDocClick = (e) => {
+      if (allergensRowRef.current && !allergensRowRef.current.contains(e.target)) {
+        setOpenAllergen(null)
+      }
+    }
+    document.addEventListener('click', handleDocClick)
+    return () => document.removeEventListener('click', handleDocClick)
+  }, [isMobile, openAllergen])
 
   const extrasTotal = Object.entries(selectedExtras).reduce((sum, [id, qty]) => {
     const extra = EXTRAS.find(e => e.id === id)
@@ -165,9 +194,15 @@ export default function PizzaRow({ pizza, discountedPrice, isPotd = false, soldO
 
       {/* Allergens */}
       {visibleAllergens.length > 0 && (
-        <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
+        <div ref={allergensRowRef} style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
           {visibleAllergens.map(a => (
-            <AllergenBadge key={a} allergen={a} />
+            <AllergenBadge
+              key={a}
+              allergen={a}
+              source={allergenSources[a]}
+              isOpen={openAllergen === a}
+              onToggle={() => setOpenAllergen(prev => (prev === a ? null : a))}
+            />
           ))}
         </div>
       )}

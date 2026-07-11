@@ -68,24 +68,21 @@ export default function PizzaBotModal({ isOpen, onClose, onComplete }) {
 
   const handleAddToCart = () => {
     if (!state.recommendation) return
-    state.recommendation.picks.forEach((rec, i) => {
-      if (!state.resultSelections[i]) return
-      orderDispatch({
-        type: 'ADD_TO_CART',
-        payload: {
-          id: rec.pizza.id,
-          name: rec.pizza.name,
-          price: rec.pizza.price,
-          quantity: rec.quantity,
-          // Per the api/pizzabot.js prompt contract, the LLM omits a modifications
-          // key entirely when it means regular dough / mozzarella — these fallbacks
-          // decode that contract, they are not guesses at a missing value.
-          dough: rec.modifications.dough || 'regular',
-          cheese: rec.modifications.cheese || 'mozzarella',
-          extras: {},
-          allergens: rec.effectiveAllergens,
-        },
-      })
+    const { pick } = state.recommendation
+    orderDispatch({
+      type: 'ADD_TO_CART',
+      payload: {
+        id: pick.pizza.id,
+        name: pick.pizza.name,
+        price: pick.pizza.price,
+        // Per the api/pizzabot.js prompt contract, the model omits a build key
+        // entirely when it means regular dough / mozzarella — these fallbacks
+        // decode that contract, they are not guesses at a missing value.
+        dough: pick.build?.dough || 'regular',
+        cheese: pick.build?.cheese || 'mozzarella',
+        extras: {},
+        allergens: pick.effectiveAllergens,
+      },
     })
     onComplete()
     onClose()
@@ -139,8 +136,12 @@ export default function PizzaBotModal({ isOpen, onClose, onComplete }) {
         }}>
           {state.messages.map((msg, i) => (
             <div key={i}>
-              {msg.role === 'bot'
-                ? <PizzaBotBubble text={msg.text} avatar={msg.avatar} />
+              {msg.role === 'bot' ? <PizzaBotBubble text={msg.text} avatar={msg.avatar} />
+                : msg.role === 'note' ? (
+                  <div className="font-zodiak" style={{ fontSize: '0.8rem', color: '#777', fontStyle: 'italic', marginBottom: '0.5rem' }}>
+                    {msg.text}
+                  </div>
+                )
                 : <UserBubble text={msg.text} />
               }
             </div>
@@ -151,11 +152,7 @@ export default function PizzaBotModal({ isOpen, onClose, onComplete }) {
           )}
 
           {state.step === 'result' && state.recommendation && (
-            <ResultCards
-              recommendation={state.recommendation}
-              resultSelections={state.resultSelections}
-              dispatch={dispatch}
-            />
+            <ResultCards recommendation={state.recommendation} onPromote={handlers.handlePromoteAlternate} />
           )}
 
           <div ref={bottomRef} />

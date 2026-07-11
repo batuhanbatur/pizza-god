@@ -1,7 +1,7 @@
 import { useReducer, useEffect } from 'react'
 import { pizzaBotReducer, initialState } from './pizzaBotReducer'
 import { BOT_LINES } from '../../data/pizzaBotScript'
-import { getRecommendation } from './api'
+import { getRecommendation, resolveBuild, partySizeLine, allergenFilterLines, vibeLine } from './api'
 
 export const AVATAR = {
   base: '/pizza-bot/god-head-base.svg',
@@ -15,6 +15,10 @@ export function usePizzaBotFlow(isOpen) {
     dispatch({ type: 'ADD_MESSAGE', payload: { role: 'bot', text, avatar } })
   const addUserMessage = (text) =>
     dispatch({ type: 'ADD_MESSAGE', payload: { role: 'user', text } })
+  // Deterministic, code-generated lines (never the model's words) — rendered as
+  // plain italic lines in the transcript, not chat bubbles. See PizzaBotModal.
+  const addNote = (text) =>
+    dispatch({ type: 'ADD_MESSAGE', payload: { role: 'note', text } })
 
   useEffect(() => {
     if (!isOpen) return
@@ -27,6 +31,7 @@ export function usePizzaBotFlow(isOpen) {
 
   const handlePartySizeChip = (chip) => {
     addUserMessage(chip.chatLabel)
+    addNote(partySizeLine(chip.value))
     dispatch({ type: 'SET_PARTY_SIZE', payload: chip.value })
     dispatch({ type: 'SET_STEP', payload: 'constraints' })
     dispatch({ type: 'SET_STEPPER', payload: null })
@@ -48,6 +53,7 @@ export function usePizzaBotFlow(isOpen) {
       ? BOT_LINES.constraints.noAllergy
       : state.allergens.join(', ')
     addUserMessage(label)
+    allergenFilterLines(state.allergens).forEach(addNote)
     dispatch({ type: 'SET_CONSTRAINTS', payload: state.allergens })
     dispatch({ type: 'SET_STEP', payload: 'vibe' })
     dispatch({ type: 'SET_PENDING', payload: true })
@@ -63,6 +69,7 @@ export function usePizzaBotFlow(isOpen) {
 
   const handleVibeChip = (chip) => {
     addUserMessage(chip.chatLabel)
+    addNote(vibeLine(chip.value))
     dispatch({ type: 'SET_VIBE', payload: chip.value })
     dispatch({ type: 'SET_STEP', payload: 'recommending' })
     dispatch({ type: 'SET_PENDING', payload: true })
@@ -78,18 +85,17 @@ export function usePizzaBotFlow(isOpen) {
     dispatch({ type: 'SET_STATUS', payload: 'thinking' })
 
     try {
-      const { picks, voiceLine } = await getRecommendation({
+      const recommendation = await getRecommendation({
         partySize: state.partySize,
         constraints: state.constraints,
         vibe,
       })
 
-      const selections = {}
-      picks.forEach((_, i) => { selections[i] = true })
-      dispatch({ type: 'SET_RESULT_SELECTIONS', payload: selections })
-      dispatch({ type: 'SET_RECOMMENDATION', payload: { picks, voiceLine } })
+      dispatch({ type: 'SET_RECOMMENDATION', payload: recommendation })
       dispatch({ type: 'SET_STATUS', payload: 'idle' })
-      addBotMessage(voiceLine, AVATAR.base) // clears pendingBot via reducer
+      // The verdict lives in the featured card, not a chat bubble — just end the
+      // typing indicator directly instead of adding a redundant message.
+      dispatch({ type: 'SET_PENDING', payload: false })
 
     } catch {
       dispatch({ type: 'SET_STATUS', payload: 'error' })
@@ -97,10 +103,27 @@ export function usePizzaBotFlow(isOpen) {
     }
   }
 
+  // Promotion is local re-arrangement, not a new recommendation — no network call.
+  // The promoted alternate's build is re-resolved fresh (never trusted as build-less
+  // just because alternates are displayed that way) so safety holds even if a
+  // demoted pick (which may carry a real swap) is later re-promoted.
+  const handlePromoteAlternate = (index) => {
+    const alt = state.recommendation?.alternates[index]
+    if (!alt) return
+    const resolved = resolveBuild(alt.pizza, state.constraints, {})
+    dispatch({
+      type: 'PROMOTE_ALTERNATE',
+      payload: {
+        index,
+        pick: { pizza: alt.pizza, build: resolved.build, effectiveAllergens: resolved.effectiveAllergens },
+      },
+    })
+  }
+
   return {
     state,
     dispatch,
-    handlers: { handlePartySizeChip, handleConstraintsDone, handleVibeChip },
+    handlers: { handlePartySizeChip, handleConstraintsDone, handleVibeChip, handlePromoteAlternate },
     AVATAR,
   }
 }

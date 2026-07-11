@@ -9,6 +9,10 @@ export const MENU = {
         description: "Tomato sauce, mozzarella, basil",
         price: 12.99,
         allergens: ["Gluten", "Milk"],
+        allergenSources: {
+          Gluten: "dough",
+          Milk: "mozzarella",
+        },
         tags: ["Vegetarian", "Classic"],
       },
       {
@@ -17,7 +21,12 @@ export const MENU = {
         tagline: "The default answer to a question nobody asked.",
         description: "Tomato sauce, mozzarella, pepperoni",
         price: 14.99,
-        allergens: ["Gluten", "Milk"],
+        allergens: ["Gluten", "Milk", "Sulphites"],
+        allergenSources: {
+          Gluten: "dough",
+          Milk: "mozzarella",
+          Sulphites: "pepperoni",
+        },
         tags: ["Classic", "Meat"],
       },
       {
@@ -27,6 +36,10 @@ export const MENU = {
         tagline: "A supergroup of cheeses. No egos. Mostly.",
         price: 15.99,
         allergens: ["Gluten", "Milk"],
+        allergenSources: {
+          Gluten: "dough",
+          Milk: "the cheese supergroup",
+        },
         tags: ["Vegetarian"],
       },
       {
@@ -35,7 +48,12 @@ export const MENU = {
         description: "Pepperoni, beef, Italian sausage, mozzarella",
         tagline: "For the ones who like it hard.",
         price: 17.99,
-        allergens: ["Gluten", "Milk"],
+        allergens: ["Gluten", "Milk", "Sulphites"],
+        allergenSources: {
+          Gluten: "dough",
+          Milk: "mozzarella",
+          Sulphites: "cured meats",
+        },
         tags: ["Meat"],
       },
 
@@ -46,7 +64,12 @@ export const MENU = {
           "Mushroom, bell pepper, red onion, black olives, mozzarella",
         tagline: "These are definitely normal mushrooms.",
         price: 14.99,
-        allergens: ["Gluten", "Milk"],
+        allergens: ["Gluten", "Milk", "Sulphites"],
+        allergenSources: {
+          Gluten: "dough",
+          Milk: "mozzarella",
+          Sulphites: "black olives",
+        },
         tags: ["Vegetarian"],
       },
     ],
@@ -76,29 +99,47 @@ export const EXTRAS = [
     label: "Jalapeño Poppers",
     price: 3.99,
     allergens: ["Gluten", "Milk", "Egg"],
+    allergenSources: {
+      Gluten: "the batter",
+      Milk: "cheese filling",
+      Egg: "the batter",
+    },
   },
   {
     id: "extra-mozzarella",
     label: "Extra Mozzarella",
     price: 1.99,
     allergens: ["Milk"],
+    allergenSources: {
+      Milk: "well… mozzarella",
+    },
   },
   {
     id: "pesto-drizzle",
     label: "Pesto Drizzle",
     price: 1.49,
     allergens: ["Nuts", "Milk"],
+    allergenSources: {
+      Nuts: "pine nuts",
+      Milk: "parmesan",
+    },
   },
   {
     id: "garlic-sauce",
     label: "Garlic Sauce",
     price: 0.99,
     allergens: ["Egg"],
+    allergenSources: {
+      Egg: "mayo base",
+    },
   },
   {
     id: "bbq-sauce",
     label: "BBQ Sauce",
     price: 0.99,
     allergens: ["Sulphites"],
+    allergenSources: {
+      Sulphites: "the sauce",
+    },
   },
 ]

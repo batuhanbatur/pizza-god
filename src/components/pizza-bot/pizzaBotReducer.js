@@ -8,7 +8,6 @@ export const initialState = {
   status: 'idle',
   allergens: [],
   stepper: null,
-  resultSelections: {},
   pendingBot: false,
   escalatedForBot: null,
 }
@@ -36,6 +35,21 @@ export function pizzaBotReducer(state, action) {
       return { ...state, status: action.payload }
     case 'SET_RECOMMENDATION':
       return { ...state, recommendation: action.payload, step: 'result' }
+    case 'PROMOTE_ALTERNATE': {
+      if (!state.recommendation) return state
+      const { index, pick } = action.payload
+      const { recommendation } = state
+      const remaining = recommendation.alternates.filter((_, i) => i !== index)
+      return {
+        ...state,
+        recommendation: {
+          ...recommendation,
+          pick,
+          alternates: [...remaining, { pizza: recommendation.pick.pizza }],
+          verdict: 'Fine. Your call.',
+        },
+      }
+    }
     case 'SET_ALLERGENS':
       return { ...state, allergens: action.payload }
     case 'TOGGLE_ALLERGEN': {
@@ -45,12 +59,6 @@ export function pizzaBotReducer(state, action) {
     }
     case 'SET_STEPPER':
       return { ...state, stepper: action.payload }
-    case 'SET_RESULT_SELECTIONS':
-      return { ...state, resultSelections: action.payload }
-    case 'TOGGLE_RESULT_SELECTION': {
-      const i = action.payload
-      return { ...state, resultSelections: { ...state.resultSelections, [i]: !state.resultSelections[i] } }
-    }
     case 'SET_ESCALATED':
       return { ...state, escalatedForBot: action.payload }
     case 'RESET':
