@@ -16,10 +16,39 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "Invalid request data" })
   }
 
+  // Mirrors src/components/pizza-bot/api.js's resolveBuild safety rule: a pizza is
+  // safe if every one of its allergens that's also a selected constraint has some
+  // OPTION_REMOVES fix (a dough or cheese swap) that removes it. Kept in sync by
+  // hand since the two files can't share code across the client/server boundary
+  // without a build step neither currently has.
+  function isPizzaSafe(pizza, selectedAllergens) {
+    const conflicts = selectedAllergens.filter(allergen => pizza.allergens.includes(allergen))
+    return conflicts.every(allergen =>
+      Object.values(OPTION_REMOVES).some(removes => removes.includes(allergen)),
+    )
+  }
+
+  const safeItems = MENU.classics.items.filter(pizza => isPizzaSafe(pizza, constraints))
+
+  // No pizza survives these constraints, even with a swap — don't ask the model to
+  // pick from an empty menu. `pick: null` isn't schema-valid (the enum below can't
+  // be empty), so this response bypasses the schema/OpenAI call entirely.
+  if (safeItems.length === 0) {
+    return res.status(200).json({
+      remark: "Nothing on the menu survives that list. The kitchen concedes.",
+      pick: null,
+      alternates: [],
+      build: null,
+    })
+  }
+
   const doughOptions = DOUGH_OPTIONS.map(option => option.id)
   const cheeseOptions = CHEESE_OPTIONS.map(option => option.id)
 
-  const menuForPrompt = MENU.classics.items.map(
+  // Banished pizzas never enter the model's context — it can't recommend what it
+  // never sees, so an unsafe pick is now structurally impossible, not just filtered
+  // after the fact.
+  const menuForPrompt = safeItems.map(
     ({ id, name, description, allergens }) => ({
       id,
       name,
@@ -67,6 +96,7 @@ Choose the most appropriate pizza from the following menu.
 
 MENU
 ${JSON.stringify(menuForPrompt, null, 2)}
+Pizzas not shown are unavailable for this order.
 
 DOUGH OPTIONS
 ${JSON.stringify(doughOptions)}
