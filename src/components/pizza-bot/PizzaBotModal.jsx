@@ -136,12 +136,8 @@ export default function PizzaBotModal({ isOpen, onClose, onComplete }) {
         }}>
           {state.messages.map((msg, i) => (
             <div key={i}>
-              {msg.role === 'bot' ? <PizzaBotBubble text={msg.text} avatar={msg.avatar} />
-                : msg.role === 'note' ? (
-                  <div className="font-zodiak" style={{ fontSize: '0.8rem', color: '#777', fontStyle: 'italic', marginBottom: '0.5rem' }}>
-                    {msg.text}
-                  </div>
-                )
+              {msg.role === 'bot'
+                ? <PizzaBotBubble text={msg.text} avatar={msg.avatar} />
                 : <UserBubble text={msg.text} />
               }
             </div>

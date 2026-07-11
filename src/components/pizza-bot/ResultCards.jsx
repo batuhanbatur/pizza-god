@@ -15,8 +15,8 @@ export function ResultCards({ recommendation, onPromote }) {
   return (
     <div style={{ marginTop: '0.25rem' }}>
 
-      {/* Filter lines already appeared progressively in the transcript above
-          (see usePizzaBotFlow's addNote calls) — not repeated here. */}
+      {/* Deterministic facts (party size, vibe, allergens) live only in the verdict's
+          opening line below, built in code by getRecommendation — not restated here. */}
 
       {/* Featured card — the pick */}
       <div style={{

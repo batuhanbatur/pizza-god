@@ -1,7 +1,7 @@
 import { useReducer, useEffect } from 'react'
 import { pizzaBotReducer, initialState } from './pizzaBotReducer'
 import { BOT_LINES } from '../../data/pizzaBotScript'
-import { getRecommendation, resolveBuild, partySizeLine, allergenFilterLines, vibeLine } from './api'
+import { getRecommendation, resolveBuild } from './api'
 
 export const AVATAR = {
   base: '/pizza-bot/god-head-base.svg',
@@ -15,10 +15,6 @@ export function usePizzaBotFlow(isOpen) {
     dispatch({ type: 'ADD_MESSAGE', payload: { role: 'bot', text, avatar } })
   const addUserMessage = (text) =>
     dispatch({ type: 'ADD_MESSAGE', payload: { role: 'user', text } })
-  // Deterministic, code-generated lines (never the model's words) — rendered as
-  // plain italic lines in the transcript, not chat bubbles. See PizzaBotModal.
-  const addNote = (text) =>
-    dispatch({ type: 'ADD_MESSAGE', payload: { role: 'note', text } })
 
   useEffect(() => {
     if (!isOpen) return
@@ -31,7 +27,6 @@ export function usePizzaBotFlow(isOpen) {
 
   const handlePartySizeChip = (chip) => {
     addUserMessage(chip.chatLabel)
-    addNote(partySizeLine(chip.value))
     dispatch({ type: 'SET_PARTY_SIZE', payload: chip.value })
     dispatch({ type: 'SET_STEP', payload: 'constraints' })
     dispatch({ type: 'SET_STEPPER', payload: null })
@@ -53,7 +48,6 @@ export function usePizzaBotFlow(isOpen) {
       ? BOT_LINES.constraints.noAllergy
       : state.allergens.join(', ')
     addUserMessage(label)
-    allergenFilterLines(state.allergens).forEach(addNote)
     dispatch({ type: 'SET_CONSTRAINTS', payload: state.allergens })
     dispatch({ type: 'SET_STEP', payload: 'vibe' })
     dispatch({ type: 'SET_PENDING', payload: true })
@@ -69,7 +63,6 @@ export function usePizzaBotFlow(isOpen) {
 
   const handleVibeChip = (chip) => {
     addUserMessage(chip.chatLabel)
-    addNote(vibeLine(chip.value))
     dispatch({ type: 'SET_VIBE', payload: chip.value })
     dispatch({ type: 'SET_STEP', payload: 'recommending' })
     dispatch({ type: 'SET_PENDING', payload: true })
@@ -110,7 +103,7 @@ export function usePizzaBotFlow(isOpen) {
   const handlePromoteAlternate = (index) => {
     const alt = state.recommendation?.alternates[index]
     if (!alt) return
-    const resolved = resolveBuild(alt.pizza, state.constraints, {})
+    const resolved = resolveBuild(alt.pizza, state.constraints)
     dispatch({
       type: 'PROMOTE_ALTERNATE',
       payload: {
