@@ -4,8 +4,30 @@ import { DOUGH_OPTIONS, CHEESE_OPTIONS, EXTRAS, OPTION_REMOVES } from '../../dat
 import { useOrder } from '../../context/OrderContext'
 import AllergenBadge from '../ui/AllergenBadge'
 import { AccessibilityContext } from '../../context/AccessibilityContext'
-import Drip from '../graffiti/Drip'
 import useIsMobile from '../../hooks/useIsMobile'
+
+const drip = '/drips/drip.svg'
+
+function OptionDrip({ optionId }) {
+  if (!optionId) return null
+  return (
+    <img
+      src={drip}
+      alt=""
+      aria-hidden="true"
+      style={{
+        position: 'absolute',
+        top: 'calc(100% - 8px)',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        width: '108%',
+        height: '26px',
+        objectFit: 'fill',
+        pointerEvents: 'none',
+      }}
+    />
+  )
+}
 
 function SprayLine({ style }) {
   return (
@@ -20,7 +42,7 @@ function SprayLine({ style }) {
   )
 }
 
-function OptionButton({ label, selected, onClick }) {
+function OptionButton({ label, selected, onClick, children }) {
   const { reduceGraffiti } = useContext(AccessibilityContext)
   const strong = selected && reduceGraffiti
 
@@ -29,6 +51,7 @@ function OptionButton({ label, selected, onClick }) {
       onClick={onClick}
       aria-pressed={selected}
       style={{
+        position: 'relative',
         background: strong ? '#1a1a1a' : 'none',
         border: reduceGraffiti
           ? `2px solid ${strong ? '#1a1a1a' : '#ccc'}`
@@ -44,6 +67,7 @@ function OptionButton({ label, selected, onClick }) {
       }}
     >
       {label}
+      {children}
     </button>
   )
 }
@@ -213,30 +237,20 @@ export default function PizzaRow({ pizza, discountedPrice, isPotd = false, soldO
         {/* Dough */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
           <span className="font-zodiak" style={{ color: '#aaa', fontSize: '0.75rem', width: isMobile ? 'auto' : '80px' }}>Dough</span>
-          {DOUGH_OPTIONS.map((opt, i) => (
-            <div key={opt.id} style={{ position: 'relative', display: 'inline-block' }}>
-              <OptionButton label={opt.label} selected={dough === opt.id} onClick={() => setDough(opt.id)} />
-              {dough === opt.id && !reduceGraffiti && (
-                <div style={{ position: 'absolute', top: '100%', left: 0, width: '100%', marginTop: '-5px', zIndex: 1 }}>
-                  <Drip variant={i + 1} />
-                </div>
-              )}
-            </div>
+          {DOUGH_OPTIONS.map(opt => (
+            <OptionButton key={opt.id} label={opt.label} selected={dough === opt.id} onClick={() => setDough(opt.id)}>
+              {dough === opt.id && !reduceGraffiti && <OptionDrip optionId={opt.id} />}
+            </OptionButton>
           ))}
         </div>
 
         {/* Cheese */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
           <span className="font-zodiak" style={{ color: '#aaa', fontSize: '0.75rem', width: isMobile ? 'auto' : '80px' }}>Cheese</span>
-          {CHEESE_OPTIONS.map((opt, i) => (
-            <div key={opt.id} style={{ position: 'relative', display: 'inline-block' }}>
-              <OptionButton label={opt.label} selected={cheese === opt.id} onClick={() => setCheese(opt.id)} />
-              {cheese === opt.id && !reduceGraffiti && (
-                <div style={{ position: 'absolute', top: '100%', left: 0, width: '100%', marginTop: '-5px', zIndex: 1 }}>
-                  <Drip variant={i + 3} />
-                </div>
-              )}
-            </div>
+          {CHEESE_OPTIONS.map(opt => (
+            <OptionButton key={opt.id} label={opt.label} selected={cheese === opt.id} onClick={() => setCheese(opt.id)}>
+              {cheese === opt.id && !reduceGraffiti && <OptionDrip optionId={opt.id} />}
+            </OptionButton>
           ))}
         </div>
 

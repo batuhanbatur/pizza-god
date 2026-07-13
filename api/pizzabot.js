@@ -22,13 +22,17 @@ export default async function handler(req, res) {
   // hand since the two files can't share code across the client/server boundary
   // without a build step neither currently has.
   function isPizzaSafe(pizza, selectedAllergens) {
-    const conflicts = selectedAllergens.filter(allergen => pizza.allergens.includes(allergen))
+    const conflicts = selectedAllergens.filter(allergen =>
+      pizza.allergens.includes(allergen),
+    )
     return conflicts.every(allergen =>
       Object.values(OPTION_REMOVES).some(removes => removes.includes(allergen)),
     )
   }
 
-  const safeItems = MENU.classics.items.filter(pizza => isPizzaSafe(pizza, constraints))
+  const safeItems = MENU.classics.items.filter(pizza =>
+    isPizzaSafe(pizza, constraints),
+  )
 
   // No pizza survives these constraints, even with a swap — don't ask the model to
   // pick from an empty menu. `pick: null` isn't schema-valid (the enum below can't
@@ -181,8 +185,8 @@ SELECTION RULES
             },
           },
         },
-        temperature: 0.9,
-        max_tokens: 300,
+        temperature: 0.6,
+        max_tokens: 180,
       }),
     })
 
