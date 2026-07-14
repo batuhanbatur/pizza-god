@@ -152,6 +152,11 @@ export default function CartSidebar({ navVisible, isOpen, onOpen, onClose }) {
   // hamburger, gated purely on navVisible. The drawer shows an empty state instead.
   const mobileCartButtonVisible = navVisible
 
+  // Scrolling back up into the hero shouldn't leave the drawer/backdrop stuck open
+  // over the hero content — hide them visually without touching openPanel, so
+  // scrolling back down reveals the same drawer state instead of having closed it.
+  const mobileDrawerVisible = isOpen && navVisible
+
   const panelWidth = isMobile
     ? (view !== 'cart' ? '100vw' : MOBILE_DRAWER_WIDTH)
     : (view !== 'cart' ? '480px' : '220px')
@@ -325,8 +330,8 @@ export default function CartSidebar({ navVisible, isOpen, onOpen, onClose }) {
             inset: 0,
             backgroundColor: 'rgba(0,0,0,0.5)',
             zIndex: 65,
-            opacity: isOpen ? 1 : 0,
-            pointerEvents: isOpen ? 'auto' : 'none',
+            opacity: mobileDrawerVisible ? 1 : 0,
+            pointerEvents: mobileDrawerVisible ? 'auto' : 'none',
             transition: 'opacity 0.3s',
           }}
         />
@@ -347,7 +352,7 @@ export default function CartSidebar({ navVisible, isOpen, onOpen, onClose }) {
         overflowX: 'hidden',
         ...(isMobile
           ? {
-              transform: `translateX(${isOpen ? '0%' : '100%'})`,
+              transform: `translateX(${mobileDrawerVisible ? '0%' : '100%'})`,
               transition: 'transform 0.3s ease, width 0.3s ease',
             }
           : {

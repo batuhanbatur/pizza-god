@@ -30,6 +30,11 @@ export default function SideNav({ navVisible, isOpen, onOpen, onClose }) {
   const [activeId, setActiveId] = useState(null)
   const intersectionState = useRef({})
 
+  // Scrolling back up into the hero shouldn't leave the drawer/backdrop stuck open
+  // over the hero content — hide them visually without touching openPanel, so
+  // scrolling back down reveals the same drawer state instead of having closed it.
+  const mobileDrawerVisible = isOpen && navVisible
+
   // Watches the actual page sections, not the nav's own markup — runs regardless
   // of isMobile/isOpen so the highlight is already correct whenever the drawer opens.
   useEffect(() => {
@@ -170,8 +175,8 @@ export default function SideNav({ navVisible, isOpen, onOpen, onClose }) {
           inset: 0,
           backgroundColor: 'rgba(0,0,0,0.5)',
           zIndex: 65,
-          opacity: isOpen ? 1 : 0,
-          pointerEvents: isOpen ? 'auto' : 'none',
+          opacity: mobileDrawerVisible ? 1 : 0,
+          pointerEvents: mobileDrawerVisible ? 'auto' : 'none',
           transition: 'opacity 0.3s',
         }}
       />
@@ -187,7 +192,7 @@ export default function SideNav({ navVisible, isOpen, onOpen, onClose }) {
         zIndex: 70,
         display: 'flex',
         flexDirection: 'column',
-        transform: `translateX(${isOpen ? '0%' : '-100%'})`,
+        transform: `translateX(${mobileDrawerVisible ? '0%' : '-100%'})`,
         transition: MOBILE_DRAWER_TRANSITION,
       }}>
 

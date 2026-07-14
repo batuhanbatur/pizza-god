@@ -33,12 +33,12 @@ export default function Hero({ hoveredButton, setHoveredButton, scrollProgress, 
 
   useEffect(() => {
     if (!isMobile || hasAutoPlayedRef.current) return
-    hasAutoPlayedRef.current = true
 
     let orderRevertTimer, aiStartTimer, aiRevertTimer
     const startTimer = setTimeout(() => {
       if (window.scrollY > 0) return // user already scrolled — skip the whole sequence
 
+      hasAutoPlayedRef.current = true
       setOrderAutoHover(true)
       setHoveredButton('order')
       orderRevertTimer = setTimeout(() => {
