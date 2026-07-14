@@ -182,7 +182,7 @@ export default function SideNav({ navVisible, isOpen, onOpen, onClose }) {
         top: 0,
         left: 0,
         width: MOBILE_DRAWER_WIDTH,
-        height: '100vh',
+        height: '100dvh',
         backgroundColor: '#111',
         zIndex: 70,
         display: 'flex',
