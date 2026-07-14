@@ -338,7 +338,7 @@ export default function CartSidebar({ navVisible, isOpen, onOpen, onClose }) {
         top: 0,
         right: 0,
         width: panelWidth,
-        height: '100vh',
+        height: '100dvh',
         backgroundColor: '#F7F2F6',
         zIndex: isMobile ? 70 : 40,
         display: 'flex',
